@@ -1,4 +1,24 @@
 import { auth, signIn, signOut } from "@/auth"
+import { Button } from "@/components/ui/button"
+import { LogInIcon, LogOutIcon } from "lucide-react"
+
+const SignInMsg = () => {
+    return (
+        <>
+            Sign In
+            <LogInIcon />
+        </>
+    )
+}
+
+const SignOutMsg = () => {
+    return (
+        <>
+            Sign Out
+            <LogOutIcon />
+        </>
+    )
+}
 
 export default async function SignIn() {
     const session = await auth()
@@ -13,7 +33,11 @@ export default async function SignIn() {
                 else await signIn(undefined, { redirectTo: "/recipes" })
             }}
         >
-            {<button type="submit">{user ? "Sign Out" : "Sign In"}</button>}
+            {
+                <Button type="submit">
+                    {user ? <SignOutMsg /> : <SignInMsg />}
+                </Button>
+            }
         </form>
     )
 }

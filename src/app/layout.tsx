@@ -14,9 +14,9 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en">
-            <body>
+            <body className="w-full min-h-screen">
                 <TopNav />
-                {children}
+                <div className="container mx-auto px-4 py-8">{children}</div>
             </body>
         </html>
     )
