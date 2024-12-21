@@ -8,6 +8,13 @@
       "when": 1734222688996,
       "tag": "0000_perpetual_ultragirl",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1734801457853,
+      "tag": "0001_stiff_betty_ross",
+      "breakpoints": true
     }
   ]
 }

@@ -1,0 +1,213 @@
+{
+  "id": "e456a6a6-d5e3-4cb6-835f-04e04e40b987",
+  "prevId": "ac507d73-ffa3-4710-abc9-011f9f73f03e",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.ingredientsTable": {
+      "name": "ingredientsTable",
+      "schema": "",
+      "columns": {
+        "ingredientId": {
+          "name": "ingredientId",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "recipeId": {
+          "name": "recipeId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ingredientName": {
+          "name": "ingredientName",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ingredientQuantity": {
+          "name": "ingredientQuantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "ingredientsTable_recipeId_recipeTable_recipeId_fk": {
+          "name": "ingredientsTable_recipeId_recipeTable_recipeId_fk",
+          "tableFrom": "ingredientsTable",
+          "tableTo": "recipeTable",
+          "columnsFrom": [
+            "recipeId"
+          ],
+          "columnsTo": [
+            "recipeId"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.recipeTable": {
+      "name": "recipeTable",
+      "schema": "",
+      "columns": {
+        "recipeId": {
+          "name": "recipeId",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "userId": {
+          "name": "userId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "servings": {
+          "name": "servings",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "duration": {
+          "name": "duration",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "recipeTable_userId_userTable_userId_fk": {
+          "name": "recipeTable_userId_userTable_userId_fk",
+          "tableFrom": "recipeTable",
+          "tableTo": "userTable",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "userId"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.stepsTable": {
+      "name": "stepsTable",
+      "schema": "",
+      "columns": {
+        "stepId": {
+          "name": "stepId",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "userId": {
+          "name": "userId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "stepNumber": {
+          "name": "stepNumber",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "stepContent": {
+          "name": "stepContent",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "stepsTable_userId_userTable_userId_fk": {
+          "name": "stepsTable_userId_userTable_userId_fk",
+          "tableFrom": "stepsTable",
+          "tableTo": "userTable",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "userId"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.userTable": {
+      "name": "userTable",
+      "schema": "",
+      "columns": {
+        "userId": {
+          "name": "userId",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
