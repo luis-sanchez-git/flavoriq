@@ -1,35 +1,73 @@
-import { pgTable, integer, text, uuid, varchar } from "drizzle-orm/pg-core"
+import {
+    pgTable,
+    integer,
+    text,
+    uuid,
+    varchar,
+    timestamp,
+    primaryKey,
+} from "drizzle-orm/pg-core"
 
-export const UserTable = pgTable("userTable", {
-    id: uuid("userId").primaryKey().defaultRandom().notNull(),
-    email: varchar("email", { length: 255 }).notNull(),
-    name: varchar("name", { length: 255 }).notNull(),
+import type { AdapterAccountType } from "next-auth/adapters"
+
+export const users = pgTable("user", {
+    id: text("id")
+        .primaryKey()
+        .$defaultFn(() => crypto.randomUUID()),
+    name: text("name"),
+    email: text("email").unique(),
+    emailVerified: timestamp("emailVerified", { mode: "date" }),
+    image: text("image"),
 })
 
-export const RecipeTable = pgTable("recipeTable", {
+export const accounts = pgTable(
+    "account",
+    {
+        userId: text("userId")
+            .notNull()
+            .references(() => users.id, { onDelete: "cascade" }),
+        type: text("type").$type<AdapterAccountType>().notNull(),
+        provider: text("provider").notNull(),
+        providerAccountId: text("providerAccountId").notNull(),
+        refresh_token: text("refresh_token"),
+        access_token: text("access_token"),
+        expires_at: integer("expires_at"),
+        token_type: text("token_type"),
+        scope: text("scope"),
+        id_token: text("id_token"),
+        session_state: text("session_state"),
+    },
+    (account) => ({
+        compoundKey: primaryKey({
+            columns: [account.provider, account.providerAccountId],
+        }),
+    }),
+)
+
+export const recipes = pgTable("recipeTable", {
     id: uuid("recipeId").primaryKey().defaultRandom().notNull(),
     name: varchar("name").notNull(),
-    userId: uuid("userId")
-        .references(() => UserTable.id)
-        .notNull(),
+    userId: text("userId")
+        .notNull()
+        .references(() => users.id, { onDelete: "cascade" }),
     serving: integer("servings").notNull(),
     duration: varchar("duration", { length: 100 }).notNull(),
 })
 
-export const IngredientsTable = pgTable("ingredientsTable", {
+export const ingredients = pgTable("ingredientsTable", {
     id: uuid("ingredientId").primaryKey().defaultRandom(),
     recipeId: uuid("recipeId")
-        .references(() => RecipeTable.id)
+        .references(() => recipes.id)
         .notNull(),
     name: varchar("ingredientName", { length: 255 }).notNull(),
     quantity: integer("ingredientQuantity").notNull(),
 })
 
-export const StepsTable = pgTable("stepsTable", {
+export const steps = pgTable("stepsTable", {
     id: uuid("stepId").primaryKey().defaultRandom().notNull(),
-    userId: uuid("userId")
-        .references(() => UserTable.id)
-        .notNull(),
+    userId: text("userId")
+        .notNull()
+        .references(() => users.id, { onDelete: "cascade" }),
     stepNumber: integer("stepNumber").notNull(),
     description: text("stepContent").notNull(),
 })

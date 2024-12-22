@@ -11,7 +11,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
-import { newRecipeSchema } from "@/schemas/newRecipeFormSchema"
+import { newRecipeFormSchema } from "@/schemas/newRecipeSchema"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import {
@@ -29,7 +29,7 @@ import { createNewRecipe, CreateRecipeState } from "@/actions/newRecipeAction"
 import { LoadingSpinner } from "@/components/ui/loadingspinner"
 import { Alert, AlertTitle } from "@/components/ui/alert"
 import { CircleCheckBigIcon } from "lucide-react"
-import { Recipe } from "@/schemas/recipeSchema"
+import { RecipeSchema } from "@/schemas/recipeSchema"
 
 type CreateRecipeResultProps = CreateRecipeState & {
     isPending: boolean
@@ -76,8 +76,8 @@ function RecipesPage() {
 
     console.log(createRecipeState.newRecipe)
 
-    const form = useForm<Recipe>({
-        resolver: zodResolver(newRecipeSchema),
+    const form = useForm<RecipeSchema>({
+        resolver: zodResolver(newRecipeFormSchema),
     })
 
     // useEffect(() => {}, [isPending, state.error])
