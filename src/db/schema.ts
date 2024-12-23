@@ -6,6 +6,7 @@ import {
     varchar,
     timestamp,
     primaryKey,
+    decimal,
 } from "drizzle-orm/pg-core"
 
 import type { AdapterAccountType } from "next-auth/adapters"
@@ -45,7 +46,7 @@ export const accounts = pgTable(
 )
 
 export const recipes = pgTable("recipeTable", {
-    id: uuid("recipeId").primaryKey().defaultRandom().notNull(),
+    id: uuid("recipeId").primaryKey().defaultRandom(),
     name: varchar("name").notNull(),
     userId: text("userId")
         .notNull()
@@ -56,15 +57,23 @@ export const recipes = pgTable("recipeTable", {
 
 export const ingredients = pgTable("ingredientsTable", {
     id: uuid("ingredientId").primaryKey().defaultRandom(),
+    userId: text("userId")
+        .notNull()
+        .references(() => users.id, { onDelete: "cascade" }),
     recipeId: uuid("recipeId")
         .references(() => recipes.id)
         .notNull(),
     name: varchar("ingredientName", { length: 255 }).notNull(),
-    quantity: integer("ingredientQuantity").notNull(),
+    quantity: decimal("ingredientQuantity", {
+        precision: 2,
+        scale: 1,
+    })
+        .$type<number>()
+        .notNull(),
 })
 
 export const steps = pgTable("stepsTable", {
-    id: uuid("stepId").primaryKey().defaultRandom().notNull(),
+    id: uuid("stepId").primaryKey().defaultRandom(),
     userId: text("userId")
         .notNull()
         .references(() => users.id, { onDelete: "cascade" }),

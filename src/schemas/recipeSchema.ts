@@ -5,7 +5,7 @@ export const RecipeSchema = z.object({
     ingredients: z.array(
         z.object({
             quantity: z.number().describe("quantity of the ingredient"),
-            ingredient: z
+            name: z
                 .string()
                 .describe(
                     "ingredient name and mentions ingredient measurement. (E.g. garlic cloves, cups onion, tsp garlic powder)",
@@ -15,11 +15,21 @@ export const RecipeSchema = z.object({
     ),
     steps: z
         .array(
-            z.string().describe("markdown content to describe the recipe step"),
+            z.object({
+                stepNumber: z.number().describe("the step number"),
+                description: z
+                    .string()
+                    .describe("the step content and or description"),
+            }),
         )
         .describe("steps of the recipe"),
     serving: z.number().describe("The amount of servings"),
-    duration: z.string().describe("How long it takes to make the recipe"),
+    duration: z
+        .string()
+        .describe("How long it takes to make the recipe")
+        .nonempty(),
 })
 
 export type RecipeType = z.infer<typeof RecipeSchema>
+export type IngredientType = RecipeType["ingredients"][number]
+export type StepType = RecipeType["steps"][number]
