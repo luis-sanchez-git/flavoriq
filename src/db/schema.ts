@@ -74,6 +74,10 @@ export const ingredients = pgTable("ingredientsTable", {
 
 export const steps = pgTable("stepsTable", {
     id: uuid("stepId").primaryKey().defaultRandom(),
+
+    recipeId: uuid("recipeId")
+        .references(() => recipes.id)
+        .notNull(),
     userId: text("userId")
         .notNull()
         .references(() => users.id, { onDelete: "cascade" }),

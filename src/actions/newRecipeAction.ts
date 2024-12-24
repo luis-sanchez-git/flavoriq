@@ -10,10 +10,10 @@ import {
 } from "@/schemas/recipeSchema"
 import { openai } from "@ai-sdk/openai"
 import { generateObject } from "ai"
-import { auth } from "@/auth"
 import { db } from "@/db/drizzle"
-import { ingredients, recipes, steps, users } from "@/db/schema"
-import { eq } from "drizzle-orm"
+import { ingredients, recipes, steps } from "@/db/schema"
+import { fetchUserId } from "@/lib/db"
+import { requireAuth } from "@/lib/auth"
 
 export type CreateRecipeState = {
     isSuccess?: boolean
@@ -21,18 +21,6 @@ export type CreateRecipeState = {
 }
 
 const modelName = "gpt-4o-2024-08-06"
-
-// Helper to fetch user ID
-async function fetchUserId(email: string | undefined): Promise<string | null> {
-    if (!email) return null
-    const user = await db
-        .select({ id: users.id })
-        .from(users)
-        .where(eq(users.email, email))
-        .limit(1)
-
-    return user[0]?.id || null
-}
 
 // Helper to validate recipe form data
 function validateRecipeForm(formData: FormData): string | null {
@@ -104,11 +92,7 @@ export async function createNewRecipe(
 
     try {
         // Authenticate user
-        const session = await auth()
-        if (!session?.user?.email) {
-            throw new Error("Unauthorized")
-        }
-
+        const user = await requireAuth()
         // Validate form data
         const recipe = validateRecipeForm(formData)
         if (!recipe) {
@@ -124,7 +108,7 @@ export async function createNewRecipe(
         const { object: newRecipe } = responseObj
 
         // Fetch user ID
-        const userId = await fetchUserId(session.user.email)
+        const userId = await fetchUserId(user.email)
         if (!userId) {
             throw new Error("User not found")
         }
