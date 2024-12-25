@@ -7,3 +7,5 @@ export const newRecipeFormSchema = z.object({
         .min(1, "text area cannot be empty")
         .max(50, "text exceeds max length of 10,000 characters"),
 })
+
+export type newRecipeFormType = z.infer<typeof newRecipeFormSchema>
