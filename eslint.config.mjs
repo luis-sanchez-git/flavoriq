@@ -1,20 +1,12 @@
-import playwright from "eslint-plugin-playwright"
+import playwright from 'eslint-plugin-playwright'
 
 const playwrightConfig = [
     {
-        files: ["src/tests/**.ts"],
-        ...playwright.configs["flat/recommended"],
+        files: ['src/tests/**.ts'],
+        ...playwright.configs['flat/recommended'],
     },
 ]
 
-const eslintConfig = [
-    {
-        files: ["src/tests/**.ts"],
-        rules: {
-            "react-hooks/rules-of-hooks": "off",
-        },
-    },
-    ...playwrightConfig,
-]
+const eslintConfig = [...playwrightConfig]
 
 export default eslintConfig
