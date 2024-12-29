@@ -1,31 +1,31 @@
-"use server"
+'use server'
 
-import { catchError } from "@/lib/utils"
-import { newRecipeFormSchema } from "@/schemas/newRecipeSchema"
+import { catchError } from '@/lib/utils'
+import { newRecipeFormSchema } from '@/schemas/newRecipeSchema'
 import {
     IngredientType,
     RecipeSchema,
     RecipeType,
     StepType,
-} from "@/schemas/recipeSchema"
-import { openai } from "@ai-sdk/openai"
-import { generateObject } from "ai"
-import { db } from "@/db/drizzle"
-import { ingredients, recipes, steps } from "@/db/schema"
-import { fetchUserId } from "@/lib/db"
-import { requireAuth } from "@/lib/auth"
+} from '@/schemas/recipeSchema'
+import { openai } from '@ai-sdk/openai'
+import { generateObject } from 'ai'
+import { db } from '@/db/drizzle'
+import { ingredients, recipes, steps } from '@/db/schema'
+import { fetchUserId } from '@/lib/db'
+import { requireAuth } from '@/lib/auth'
 
 export type CreateRecipeState = {
     isSuccess?: boolean
     error?: string
 }
 
-const modelName = "gpt-4o-2024-08-06"
+const modelName = 'gpt-4o-2024-08-06'
 
 // Helper to validate recipe form data
 function validateRecipeForm(formData: FormData): string | null {
     const validatedFields = newRecipeFormSchema.safeParse({
-        recipe: formData.get("recipe"),
+        recipe: formData.get('recipe'),
     })
 
     if (!validatedFields.success) return null
@@ -88,21 +88,22 @@ export async function createNewRecipe(
     prevState: CreateRecipeState,
     formData: FormData,
 ): Promise<CreateRecipeState> {
-    const respObj: CreateRecipeState = { error: "", isSuccess: true }
+    const respObj: CreateRecipeState = { error: '', isSuccess: true }
 
     try {
         // Authenticate user
         const user = await requireAuth()
+        console.log(user)
         // Validate form data
         const recipe = validateRecipeForm(formData)
         if (!recipe) {
-            throw new Error("Invalid form data")
+            throw new Error('Invalid form data')
         }
 
         // Generate recipe from OpenAI
         const [generateErr, responseObj] = await generateRecipe(recipe)
         if (generateErr || !responseObj) {
-            throw new Error("Failed to generate recipe")
+            throw new Error('Failed to generate recipe')
         }
 
         const { object: newRecipe } = responseObj
@@ -110,13 +111,13 @@ export async function createNewRecipe(
         // Fetch user ID
         const userId = await fetchUserId(user.email)
         if (!userId) {
-            throw new Error("User not found")
+            throw new Error('User not found')
         }
 
         // Insert recipe into database
         const recipeId = await insertRecipe(userId, newRecipe)
         if (!recipeId) {
-            throw new Error("Failed to save recipe")
+            throw new Error('Failed to save recipe')
         }
 
         // Insert ingredients and steps
@@ -124,8 +125,8 @@ export async function createNewRecipe(
 
         respObj.isSuccess = true
     } catch (error) {
-        console.error("Error creating recipe:", error)
-        respObj.error = error instanceof Error ? error.message : "Unknown error"
+        console.error('Error creating recipe:', error)
+        respObj.error = error instanceof Error ? error.message : 'Unknown error'
         respObj.isSuccess = false
     }
 

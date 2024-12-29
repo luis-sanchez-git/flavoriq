@@ -36,6 +36,20 @@
       "when": 1735078697908,
       "tag": "0004_magenta_rick_jones",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1735502200211,
+      "tag": "0005_odd_longshot",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1735503865368,
+      "tag": "0006_lying_namora",
+      "breakpoints": true
     }
   ]
 }

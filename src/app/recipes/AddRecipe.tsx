@@ -1,3 +1,5 @@
+'use client'
+
 import {
     Dialog,
     DialogContent,
@@ -6,8 +8,8 @@ import {
     DialogHeader,
     DialogTitle,
     DialogTrigger,
-} from "@/components/ui/dialog"
-import AddRecipeButton from "@/components/AddRecipeButton"
+} from '@/components/ui/dialog'
+import AddRecipeButton from '@/components/AddRecipeButton'
 import {
     Form,
     FormControl,
@@ -16,22 +18,22 @@ import {
     FormItem,
     FormLabel,
     FormMessage,
-} from "@/components/ui/form"
-import { Textarea } from "@/components/ui/textarea"
-import { LoadingSpinner } from "@/components/ui/loadingspinner"
-import { Alert, AlertTitle } from "@/components/ui/alert"
-import { CircleCheckBigIcon } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { zodResolver } from "@hookform/resolvers/zod"
+} from '@/components/ui/form'
+import { Textarea } from '@/components/ui/textarea'
+import { LoadingSpinner } from '@/components/ui/loadingspinner'
+import { Alert, AlertTitle } from '@/components/ui/alert'
+import { CircleCheckBigIcon } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { zodResolver } from '@hookform/resolvers/zod'
 
 import {
     newRecipeFormSchema,
     newRecipeFormType,
-} from "@/schemas/newRecipeSchema"
-import { useForm } from "react-hook-form"
+} from '@/schemas/newRecipeSchema'
+import { useForm } from 'react-hook-form'
 
-import { useActionState } from "react"
-import { createNewRecipe, CreateRecipeState } from "@/actions/newRecipeAction"
+import { useActionState } from 'react'
+import { createNewRecipe, CreateRecipeState } from '@/actions/newRecipeAction'
 
 type CreateRecipeResultProps = CreateRecipeState & {
     isPending: boolean
@@ -42,7 +44,7 @@ function CreateRecipeResult({
     isSuccess,
     isPending,
 }: CreateRecipeResultProps) {
-    console.log("error", error, "isSuccess", isSuccess)
+    console.log('error', error, 'isSuccess', isSuccess)
     if (isPending || (error === undefined && isSuccess === undefined)) {
         return null
     }
@@ -50,7 +52,7 @@ function CreateRecipeResult({
     const isError = isSuccess === false
 
     return (
-        <Alert variant={isError ? "destructive" : "default"}>
+        <Alert variant={isError ? 'destructive' : 'default'}>
             <AlertTitle>
                 {isError ? (
                     <>Error Creating Recipe. Try Again.</>
@@ -116,7 +118,7 @@ export function AddRecipeDialog() {
                                 type="submit"
                                 disabled={isPending}
                             >
-                                {isPending ? <LoadingSpinner /> : "Create"}
+                                {isPending ? <LoadingSpinner /> : 'Create'}
                             </Button>
                         </form>
                     </Form>

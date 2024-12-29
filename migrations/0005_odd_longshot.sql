@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "idIdx" ON "recipeTable" USING btree ("recipeId");
