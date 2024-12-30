@@ -2,20 +2,21 @@ import { notFound } from 'next/navigation'
 import { RecipeType } from '@/schemas/recipeSchema'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { getRecipe } from '@/lib/data'
+import RecipePrompt from './recipePrompt'
 
 export default async function RecipePage({
     params,
 }: {
     params: { id: string }
 }) {
-    const recipe = await getRecipe(params.id)
-    console.log(recipe)
+    const recipe: RecipeType = await getRecipe(params.id)
     if (!recipe) {
         notFound()
     }
 
     return (
         <div className="container mx-auto px-4 py-8">
+            <RecipePrompt recipe={recipe} />
             <Card>
                 <CardHeader>
                     <CardTitle className="text-3xl font-bold">

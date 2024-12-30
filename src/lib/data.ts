@@ -147,7 +147,6 @@ export async function getRecipes(filters?: GetRecipeFilter) {
             .leftJoin(ingredients, eq(recipes.id, ingredients.recipeId))
             .leftJoin(steps, eq(recipes.id, steps.recipeId))
             .where(and(...where))
-        console.log(recipeData)
         return formatRecipes(recipeData)
     } catch (e) {
         if (e instanceof GetRecipeError) {

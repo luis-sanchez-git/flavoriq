@@ -20,7 +20,7 @@ export type CreateRecipeState = {
     error?: string
 }
 
-const modelName = 'gpt-4o-2024-08-06'
+const modelName = process.env.OPENAI_CREATE_RECIPE_MODEL
 
 // Helper to validate recipe form data
 function validateRecipeForm(formData: FormData): string | null {
