@@ -9,7 +9,8 @@ export default async function RecipePage({
 }: {
     params: { id: string }
 }) {
-    const recipe: RecipeType = await getRecipe(params.id)
+    const { id } = await params
+    const recipe: RecipeType = await getRecipe(id)
     if (!recipe) {
         notFound()
     }

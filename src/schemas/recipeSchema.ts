@@ -7,12 +7,19 @@ export const RecipeSchema = z.object({
         z.object({
             id: z.string().describe('The id of the ingredient'),
             quantity: z.number().describe('quantity of the ingredient'),
+            unit: z
+                .string()
+                .describe('unit of the ingredient in singular form')
+                .optional(),
             name: z
                 .string()
-                .describe(
-                    'ingredient name and mentions ingredient measurement. (E.g. garlic cloves, cups onion, tsp garlic powder)',
-                )
+                .describe('ingredient name in singular form. (E.g. garlic)')
                 .describe('list of ingredients'),
+            customIngredientId: z
+                .string()
+                .describe('the id of the custom ingredient')
+                .optional(),
+            note: z.string().describe('note of the ingredient').optional(),
         }),
     ),
     steps: z

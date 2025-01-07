@@ -11,16 +11,25 @@ import {
 import { openai } from '@ai-sdk/openai'
 import { generateObject } from 'ai'
 import { db } from '@/db/drizzle'
-import { ingredients, recipes, steps } from '@/db/schema'
+import {
+    customIngredients,
+    recipeIngredients,
+    recipes,
+    steps,
+} from '@/db/schema'
 import { fetchUserId } from '@/lib/db'
 import { requireAuth } from '@/lib/auth'
+import {
+    knownIngredientsSchema,
+    knownUnitsSchema,
+} from '@/schemas/knownRecipeValues'
 
 export type CreateRecipeState = {
     isSuccess?: boolean
     error?: string
 }
 
-const modelName = process.env.OPENAI_CREATE_RECIPE_MODEL
+const modelName = process.env.OPENAI_CREATE_RECIPE_MODEL!
 
 // Helper to validate recipe form data
 function validateRecipeForm(formData: FormData): string | null {
@@ -64,6 +73,25 @@ async function insertRecipeDetails(
     recipeId: string,
     recipeData: RecipeType,
 ) {
+    for (const ingredient of recipeData.ingredients) {
+        if (!knownIngredientsSchema.safeParse(ingredient.name).success) {
+            // create the custom ingredient, and get the id
+            const customIngredient = await db
+                .insert(customIngredients)
+                .values({
+                    name: ingredient.name,
+                    userId,
+                })
+                .returning({ id: customIngredients.id })
+            ingredient.customIngredientId = customIngredient[0].id
+        }
+        // if the unit is custom, place it in the note column
+        if (!knownUnitsSchema.safeParse(ingredient.unit).success) {
+            ingredient.note = ingredient.unit
+            ingredient.unit = undefined
+        }
+    }
+
     const ingredientInserts = recipeData.ingredients.map(
         (ingredient: IngredientType) => ({
             recipeId,
@@ -72,7 +100,7 @@ async function insertRecipeDetails(
             userId,
         }),
     )
-    await db.insert(ingredients).values(ingredientInserts)
+    await db.insert(recipeIngredients).values(ingredientInserts)
 
     const stepInserts = recipeData.steps.map((step: StepType) => ({
         recipeId,

@@ -1,5 +1,10 @@
 import { db } from '@/db/drizzle'
-import { ingredients, recipes, steps } from '@/db/schema'
+import {
+    customIngredients,
+    recipeIngredients,
+    recipes,
+    steps,
+} from '@/db/schema'
 import { requireAuth } from '@/lib/auth'
 import { fetchUserId } from '@/lib/db'
 import { IngredientType, RecipeType, StepType } from '@/schemas/recipeSchema'
@@ -27,6 +32,9 @@ type JoinedRecipe = {
     stepId: string | null
     stepNumber: number | null
     stepDescription: string | null
+    ingredientCustomName: string | null
+    ingredientUnit: string | null
+    ingredientNote: string | null
 }
 
 type ExtendedRecipeType = RecipeType & {
@@ -44,6 +52,9 @@ const IngredientSchema = z.object({
     id: z.string(),
     name: z.string(),
     quantity: z.number(),
+    customIngredientId: z.string().optional(),
+    unit: z.string().optional(),
+    note: z.string().optional(),
 })
 
 function validateStep(stepData: JoinedRecipe): StepType | null {
@@ -62,6 +73,7 @@ function validateIngredient(
         id: ingredientData.ingredientId,
         name: ingredientData.ingredientName,
         quantity: ingredientData.ingredientQuantity,
+        unit: ingredientData.ingredientUnit,
     })
     return parsed.success ? parsed.data : null
 }
@@ -136,16 +148,26 @@ export async function getRecipes(filters?: GetRecipeFilter) {
                 recipeName: recipes.name,
                 serving: recipes.serving,
                 duration: recipes.duration,
-                ingredientId: ingredients.id,
-                ingredientName: ingredients.name,
-                ingredientQuantity: ingredients.quantity,
+                ingredientId: recipeIngredients.id,
+                ingredientName: recipeIngredients.name,
+                ingredientCustomName: customIngredients.name,
+                ingredientNote: recipeIngredients.note,
+                ingredientQuantity: recipeIngredients.quantity,
+                ingredientUnit: recipeIngredients.unit,
                 stepId: steps.id,
                 stepNumber: steps.stepNumber,
                 stepDescription: steps.description,
             })
             .from(recipes)
-            .leftJoin(ingredients, eq(recipes.id, ingredients.recipeId))
+            .leftJoin(
+                recipeIngredients,
+                eq(recipes.id, recipeIngredients.recipeId),
+            )
             .leftJoin(steps, eq(recipes.id, steps.recipeId))
+            .leftJoin(
+                customIngredients,
+                eq(recipeIngredients.customIngredientId, customIngredients.id),
+            )
             .where(and(...where))
         return formatRecipes(recipeData)
     } catch (e) {
