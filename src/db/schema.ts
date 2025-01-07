@@ -1,4 +1,8 @@
 import {
+    knownIngredientsSchema,
+    knownUnitsSchema,
+} from '@/schemas/knownRecipeValues'
+import {
     pgTable,
     integer,
     text,
@@ -8,6 +12,7 @@ import {
     primaryKey,
     uniqueIndex,
     real,
+    pgEnum,
 } from 'drizzle-orm/pg-core'
 
 import type { AdapterAccountType } from 'next-auth/adapters'
@@ -64,7 +69,14 @@ export const recipes = pgTable(
     },
 )
 
-export const ingredients = pgTable('ingredientsTable', {
+export const KnownIngredients = pgEnum(
+    'knownIngredients',
+    knownIngredientsSchema.options,
+)
+
+export const KnownUnits = pgEnum('knownUnits', knownUnitsSchema.options)
+
+export const recipeIngredients = pgTable('ingredientsTable', {
     id: uuid('ingredientId').primaryKey().defaultRandom(),
     userId: text('userId')
         .notNull()
@@ -73,7 +85,21 @@ export const ingredients = pgTable('ingredientsTable', {
         .references(() => recipes.id)
         .notNull(),
     name: varchar('ingredientName', { length: 255 }).notNull(),
-    quantity: real('ingredientQuantity').$type<number>().notNull(),
+    predefinedIngredient: KnownIngredients('predefinedIngredient'),
+    customIngredientId: uuid('customIngredientId').references(
+        () => customIngredients.id,
+    ),
+    quantity: real('ingredientQuantity').$type<number>(), // Optional for non-measurable ingredients
+    unit: KnownUnits('unit'),
+    note: text('ingredientNote'), // For additional context like "favorite rub seasoning"
+})
+
+export const customIngredients = pgTable('customIngredients', {
+    id: uuid('customIngredientId').primaryKey().defaultRandom(),
+    name: text('customIngredientName').notNull(), // User-defined ingredient name
+    userId: text('userId')
+        .notNull()
+        .references(() => users.id, { onDelete: 'cascade' }), // Reference to user
 })
 
 export const steps = pgTable('stepsTable', {

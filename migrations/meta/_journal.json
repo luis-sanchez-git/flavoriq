@@ -50,6 +50,13 @@
       "when": 1735503865368,
       "tag": "0006_lying_namora",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1736217661340,
+      "tag": "0007_sharp_bulldozer",
+      "breakpoints": true
     }
   ]
 }
