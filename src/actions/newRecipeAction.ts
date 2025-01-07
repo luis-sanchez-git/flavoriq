@@ -64,12 +64,13 @@ async function insertRecipeDetails(
     recipeId: string,
     recipeData: RecipeType,
 ) {
+    console.log('recipeId', recipeId)
     const ingredientInserts = recipeData.ingredients.map(
-        (ingredient: IngredientType, index: number) => ({
-            recipeId,
+        (ingredient: IngredientType) => ({
+            recipeId: recipeId,
             name: ingredient.name,
             quantity: ingredient.quantity,
-            userId,
+            userId: userId,
             unit: ingredient.unit,
             note: ingredient.note,
         }),
@@ -77,10 +78,10 @@ async function insertRecipeDetails(
     await db.insert(recipeIngredients).values(ingredientInserts)
 
     const stepInserts = recipeData.steps.map((step: StepType) => ({
-        recipeId,
+        recipeId: recipeId,
         stepNumber: step.stepNumber,
         description: step.description,
-        userId,
+        userId: userId,
     }))
     await db.insert(steps).values(stepInserts)
 }
@@ -112,6 +113,7 @@ export async function createNewRecipe(
 
         // Fetch user ID
         const userId = await fetchUserId(user.email)
+
         if (!userId) {
             throw new Error('User not found')
         }
