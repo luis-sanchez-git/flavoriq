@@ -9,16 +9,14 @@ export const RecipeSchema = z.object({
             quantity: z.number().describe('quantity of the ingredient'),
             unit: z
                 .string()
-                .describe('unit of the ingredient in singular form')
+                .describe(
+                    'unit of the ingredient in singular form (e.g. cup, tbsp,etc.',
+                )
                 .optional(),
             name: z
                 .string()
                 .describe('ingredient name in singular form. (E.g. garlic)')
                 .describe('list of ingredients'),
-            customIngredientId: z
-                .string()
-                .describe('the id of the custom ingredient')
-                .optional(),
             note: z.string().describe('note of the ingredient').optional(),
         }),
     ),

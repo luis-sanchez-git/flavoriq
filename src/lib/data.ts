@@ -1,10 +1,5 @@
 import { db } from '@/db/drizzle'
-import {
-    customIngredients,
-    recipeIngredients,
-    recipes,
-    steps,
-} from '@/db/schema'
+import { recipeIngredients, recipes, steps } from '@/db/schema'
 import { requireAuth } from '@/lib/auth'
 import { fetchUserId } from '@/lib/db'
 import { IngredientType, RecipeType, StepType } from '@/schemas/recipeSchema'
@@ -32,7 +27,6 @@ type JoinedRecipe = {
     stepId: string | null
     stepNumber: number | null
     stepDescription: string | null
-    ingredientCustomName: string | null
     ingredientUnit: string | null
     ingredientNote: string | null
 }
@@ -52,7 +46,6 @@ const IngredientSchema = z.object({
     id: z.string(),
     name: z.string(),
     quantity: z.number(),
-    customIngredientId: z.string().optional(),
     unit: z.string().optional(),
     note: z.string().optional(),
 })
@@ -150,7 +143,6 @@ export async function getRecipes(filters?: GetRecipeFilter) {
                 duration: recipes.duration,
                 ingredientId: recipeIngredients.id,
                 ingredientName: recipeIngredients.name,
-                ingredientCustomName: customIngredients.name,
                 ingredientNote: recipeIngredients.note,
                 ingredientQuantity: recipeIngredients.quantity,
                 ingredientUnit: recipeIngredients.unit,
@@ -164,10 +156,6 @@ export async function getRecipes(filters?: GetRecipeFilter) {
                 eq(recipes.id, recipeIngredients.recipeId),
             )
             .leftJoin(steps, eq(recipes.id, steps.recipeId))
-            .leftJoin(
-                customIngredients,
-                eq(recipeIngredients.customIngredientId, customIngredients.id),
-            )
             .where(and(...where))
         return formatRecipes(recipeData)
     } catch (e) {

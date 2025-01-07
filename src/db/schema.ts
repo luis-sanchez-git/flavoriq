@@ -1,8 +1,4 @@
 import {
-    knownIngredientsSchema,
-    knownUnitsSchema,
-} from '@/schemas/knownRecipeValues'
-import {
     pgTable,
     integer,
     text,
@@ -69,37 +65,15 @@ export const recipes = pgTable(
     },
 )
 
-export const KnownIngredients = pgEnum(
-    'knownIngredients',
-    knownIngredientsSchema.options,
-)
-
-export const KnownUnits = pgEnum('knownUnits', knownUnitsSchema.options)
-
-export const recipeIngredients = pgTable('ingredientsTable', {
+export const recipeIngredients = pgTable('recipeIngredients', {
     id: uuid('ingredientId').primaryKey().defaultRandom(),
     userId: text('userId')
         .notNull()
         .references(() => users.id, { onDelete: 'cascade' }),
-    recipeId: uuid('recipeId')
-        .references(() => recipes.id)
-        .notNull(),
     name: varchar('ingredientName', { length: 255 }).notNull(),
-    predefinedIngredient: KnownIngredients('predefinedIngredient'),
-    customIngredientId: uuid('customIngredientId').references(
-        () => customIngredients.id,
-    ),
-    quantity: real('ingredientQuantity').$type<number>(), // Optional for non-measurable ingredients
-    unit: KnownUnits('unit'),
-    note: text('ingredientNote'), // For additional context like "favorite rub seasoning"
-})
-
-export const customIngredients = pgTable('customIngredients', {
-    id: uuid('customIngredientId').primaryKey().defaultRandom(),
-    name: text('customIngredientName').notNull(), // User-defined ingredient name
-    userId: text('userId')
-        .notNull()
-        .references(() => users.id, { onDelete: 'cascade' }), // Reference to user
+    quantity: real('ingredientQuantity').$type<number>(),
+    unit: varchar('unit', { length: 255 }),
+    note: text('ingredientNote'), // For additional context like "favorite rub seasoning" or unknown units
 })
 
 export const steps = pgTable('stepsTable', {
