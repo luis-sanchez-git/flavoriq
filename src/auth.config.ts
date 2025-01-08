@@ -1,22 +1,33 @@
-import type { NextAuthConfig } from "next-auth"
-import Google from "next-auth/providers/google"
-import Credentials from "next-auth/providers/credentials"
+import type { NextAuthConfig } from 'next-auth'
+import Google from 'next-auth/providers/google'
+import Credentials from 'next-auth/providers/credentials'
 
 export const authConfig = {
     providers: [
         Google,
         Credentials({
-            id: "password",
-            name: "Password",
+            id: 'credentials',
+            name: 'Credentials',
             credentials: {
-                password: { label: "Password", type: "password" },
+                password: { label: 'Password', type: 'password' },
+                demoToken: { label: 'Demo Token', type: 'text' },
             },
-            authorize: (credentials) => {
-                if (credentials.password === "password") {
+            async authorize(credentials) {
+                if (credentials?.demoToken === process.env.DEMO_TOKEN) {
                     return {
-                        email: "bob@alice.com",
-                        name: "Bob Alice",
-                        image: "https://avatars.githubusercontent.com/u/67470890?s=200&v=4",
+                        id: 'demo-user',
+                        email: 'demo@flavoriq.com',
+                        name: 'Demo User',
+                        image: 'https://avatars.githubusercontent.com/u/67470890?s=200&v=4',
+                    }
+                }
+
+                if (credentials?.password === 'password') {
+                    return {
+                        id: 'regular-user',
+                        email: 'bob@alice.com',
+                        name: 'Bob Alice',
+                        image: 'https://avatars.githubusercontent.com/u/67470890?s=200&v=4',
                     }
                 }
                 return null

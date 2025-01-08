@@ -1,12 +1,13 @@
-import { db } from "@/db/drizzle"
-import { users } from "@/db/schema"
-import { eq } from "drizzle-orm"
+import { db } from '@/db/drizzle'
+import { users } from '@/db/schema'
+import { eq } from 'drizzle-orm'
 
 // Helper to fetch user ID
 export async function fetchUserId(
     email: string | undefined,
 ): Promise<string | null> {
     if (!email) return null
+    console.log('email', email)
     const user = await db
         .select({ id: users.id })
         .from(users)

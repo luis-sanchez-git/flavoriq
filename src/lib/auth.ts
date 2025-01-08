@@ -1,9 +1,10 @@
-import { auth } from "@/auth"
-import { userSessionSchema, UserSessionType } from "@/schemas/authSchema"
+import { auth } from '@/auth'
+import { userSessionSchema, UserSessionType } from '@/schemas/authSchema'
 
 export async function requireAuth(): Promise<UserSessionType> {
-    const errorMessage = "Unauthorized"
+    const errorMessage = 'Unauthorized'
     const session = await auth()
+    console.log(session)
     if (!session?.user) throw new Error(errorMessage)
 
     const { user } = session

@@ -125,6 +125,7 @@ export async function getRecipes(filters?: GetRecipeFilter) {
         const user = await requireAuth()
 
         const userId = await fetchUserId(user.email)
+
         if (!userId) {
             throw new RecipeError('User not found')
         }
