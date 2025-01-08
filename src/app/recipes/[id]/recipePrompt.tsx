@@ -16,6 +16,7 @@ import { WandSparklesIcon } from 'lucide-react'
 
 interface RecipePromptProps {
     recipe: RecipeType
+    className?: string
 }
 
 export default function RecipePrompt({ recipe }: RecipePromptProps) {
@@ -25,8 +26,11 @@ export default function RecipePrompt({ recipe }: RecipePromptProps) {
         <>
             <Sheet>
                 <SheetTrigger asChild>
-                    <Button>
-                        <WandSparklesIcon />
+                    <Button 
+                        variant="secondary" 
+                        className="w-10 h-10 rounded-full p-2 fixed bottom-6 right-6 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700"
+                    >
+                        <WandSparklesIcon className="w-5 h-5 text-white" />
                     </Button>
                 </SheetTrigger>
                 <SheetContent className="bg-gray-50 flex flex-col w-1/3 ">

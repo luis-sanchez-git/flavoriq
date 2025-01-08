@@ -8,7 +8,6 @@ import {
     primaryKey,
     uniqueIndex,
     real,
-    pgEnum,
 } from 'drizzle-orm/pg-core'
 
 import type { AdapterAccountType } from 'next-auth/adapters'
@@ -68,7 +67,7 @@ export const recipes = pgTable(
 export const recipeIngredients = pgTable('recipeIngredients', {
     id: uuid('ingredientId').primaryKey().defaultRandom(),
     recipeId: uuid('recipeId')
-        .references(() => recipes.id)
+        .references(() => recipes.id, { onDelete: 'cascade' })
         .notNull(),
     userId: text('userId')
         .notNull()
@@ -83,7 +82,7 @@ export const steps = pgTable('stepsTable', {
     id: uuid('stepId').primaryKey().defaultRandom(),
 
     recipeId: uuid('recipeId')
-        .references(() => recipes.id)
+        .references(() => recipes.id, { onDelete: 'cascade' })
         .notNull(),
     userId: text('userId')
         .notNull()

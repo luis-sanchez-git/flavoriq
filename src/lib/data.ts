@@ -7,7 +7,7 @@ import { and, eq } from 'drizzle-orm'
 import { catchError } from './utils'
 import { z } from 'zod'
 
-class GetRecipeError extends Error {
+export class RecipeError extends Error {
     details?: any
 
     constructor(message: string, details?: any) {
@@ -67,6 +67,7 @@ function validateIngredient(
         name: ingredientData.ingredientName,
         quantity: ingredientData.ingredientQuantity,
         unit: ingredientData.ingredientUnit,
+        note: ingredientData.ingredientNote,
     })
     return parsed.success ? parsed.data : null
 }
@@ -91,10 +92,6 @@ function formatRecipes(recipeData: JoinedRecipe[]) {
         }
 
         const recipe = recipesMap.get(recipeId)!
-
-        // Add ingredient if it exists
-        // TODO: Here  we are adding ingredients, but we should only be adding non duplicates
-        // same for Steps
 
         const ingredientIds = recipe.ingredientIds!
         const stepIds = recipe.stepIds!
@@ -129,7 +126,7 @@ export async function getRecipes(filters?: GetRecipeFilter) {
 
         const userId = await fetchUserId(user.email)
         if (!userId) {
-            throw new GetRecipeError('User not found')
+            throw new RecipeError('User not found')
         }
 
         const where = [eq(recipes.userId, userId)]
@@ -159,21 +156,21 @@ export async function getRecipes(filters?: GetRecipeFilter) {
             .where(and(...where))
         return formatRecipes(recipeData)
     } catch (e) {
-        if (e instanceof GetRecipeError) {
-            console.error(`[GetRecipeError]: ${e.message}`, {
+        if (e instanceof RecipeError) {
+            console.error(`[RecipeError]: ${e.message}`, {
                 details: e.details,
             })
         } else {
             console.error(`[UnhandledError]: ${e}`)
         }
-        throw new GetRecipeError('Failed to fetch recipes', e)
+        throw new RecipeError('Failed to fetch recipes', e)
     }
 }
 
 export async function getRecipe(id: string) {
     const [error, recipes] = await catchError(getRecipes({ recipeId: id }))
     if (error || !recipes?.length) {
-        throw new GetRecipeError('Recipe not found', { recipeId: id })
+        throw new RecipeError('Recipe not found', { recipeId: id })
     }
     return recipes[0]
 }

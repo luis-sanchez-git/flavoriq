@@ -1,5 +1,5 @@
 {
-  "id": "2f5d9e0e-e3a7-430c-a7e6-92e679029f40",
+  "id": "719591e4-4a0a-4fa2-ae5e-21ace065c16c",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -31,6 +31,48 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "refresh_token": {
+          "name": "refresh_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "access_token": {
+          "name": "access_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "token_type": {
+          "name": "token_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "scope": {
+          "name": "scope",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "id_token": {
+          "name": "id_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "session_state": {
+          "name": "session_state",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
@@ -49,14 +91,22 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {},
+      "compositePrimaryKeys": {
+        "account_provider_providerAccountId_pk": {
+          "name": "account_provider_providerAccountId_pk",
+          "columns": [
+            "provider",
+            "providerAccountId"
+          ]
+        }
+      },
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.ingredientsTable": {
-      "name": "ingredientsTable",
+    "public.recipeIngredients": {
+      "name": "recipeIngredients",
       "schema": "",
       "columns": {
         "ingredientId": {
@@ -72,6 +122,12 @@
           "primaryKey": false,
           "notNull": true
         },
+        "userId": {
+          "name": "userId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
         "ingredientName": {
           "name": "ingredientName",
           "type": "varchar(255)",
@@ -80,16 +136,28 @@
         },
         "ingredientQuantity": {
           "name": "ingredientQuantity",
-          "type": "integer",
+          "type": "real",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
+        },
+        "unit": {
+          "name": "unit",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ingredientNote": {
+          "name": "ingredientNote",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "ingredientsTable_recipeId_recipeTable_recipeId_fk": {
-          "name": "ingredientsTable_recipeId_recipeTable_recipeId_fk",
-          "tableFrom": "ingredientsTable",
+        "recipeIngredients_recipeId_recipeTable_recipeId_fk": {
+          "name": "recipeIngredients_recipeId_recipeTable_recipeId_fk",
+          "tableFrom": "recipeIngredients",
           "tableTo": "recipeTable",
           "columnsFrom": [
             "recipeId"
@@ -97,7 +165,20 @@
           "columnsTo": [
             "recipeId"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "recipeIngredients_userId_user_id_fk": {
+          "name": "recipeIngredients_userId_user_id_fk",
+          "tableFrom": "recipeIngredients",
+          "tableTo": "user",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -143,7 +224,23 @@
           "notNull": true
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idIdx": {
+          "name": "idIdx",
+          "columns": [
+            {
+              "expression": "recipeId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "recipeTable_userId_user_id_fk": {
           "name": "recipeTable_userId_user_id_fk",
@@ -176,6 +273,12 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
+        "recipeId": {
+          "name": "recipeId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
         "userId": {
           "name": "userId",
           "type": "text",
@@ -197,6 +300,19 @@
       },
       "indexes": {},
       "foreignKeys": {
+        "stepsTable_recipeId_recipeTable_recipeId_fk": {
+          "name": "stepsTable_recipeId_recipeTable_recipeId_fk",
+          "tableFrom": "stepsTable",
+          "tableTo": "recipeTable",
+          "columnsFrom": [
+            "recipeId"
+          ],
+          "columnsTo": [
+            "recipeId"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
         "stepsTable_userId_user_id_fk": {
           "name": "stepsTable_userId_user_id_fk",
           "tableFrom": "stepsTable",
@@ -236,6 +352,12 @@
         "email": {
           "name": "email",
           "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "emailVerified": {
+          "name": "emailVerified",
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": false
         },

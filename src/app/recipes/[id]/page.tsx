@@ -16,7 +16,7 @@ export default async function RecipePage({
     }
 
     return (
-        <div className="container mx-auto px-4 py-8">
+        <div className="container gap-4 flex flex-col">
             <RecipePrompt recipe={recipe} />
             <Card>
                 <CardHeader>
@@ -33,7 +33,11 @@ export default async function RecipePage({
                             <ul className="list-disc pl-5 space-y-2">
                                 {recipe.ingredients.map((ingredient, index) => (
                                     <li key={index}>
-                                        {ingredient.quantity} {ingredient.name}
+                                        {ingredient.quantity} {ingredient.unit} {ingredient.name} {ingredient.note && (
+                                            <span className="text-gray-500">
+                                                ({ingredient.note})
+                                            </span>
+                                        )}
                                     </li>
                                 ))}
                             </ul>

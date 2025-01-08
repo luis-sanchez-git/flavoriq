@@ -14,6 +14,7 @@ import { db } from '@/db/drizzle'
 import { recipeIngredients, recipes, steps } from '@/db/schema'
 import { fetchUserId } from '@/lib/db'
 import { requireAuth } from '@/lib/auth'
+import { revalidatePath } from 'next/cache'
 
 export type CreateRecipeState = {
     isSuccess?: boolean
@@ -128,6 +129,7 @@ export async function createNewRecipe(
         await insertRecipeDetails(userId, recipeId, newRecipe)
 
         respObj.isSuccess = true
+        revalidatePath('/recipes')
     } catch (error) {
         console.error('Error creating recipe:', error)
         respObj.error = error instanceof Error ? error.message : 'Unknown error'
