@@ -56,7 +56,7 @@ const createCustomAdapter = () => {
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-    adapter: DrizzleAdapter(db),
+    adapter: createCustomAdapter(),
     debug: true,
     session: {
         strategy: 'jwt',
