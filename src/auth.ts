@@ -2,7 +2,7 @@ import NextAuth from 'next-auth'
 import { authConfig } from './auth.config'
 import { DrizzleAdapter } from '@auth/drizzle-adapter'
 import { db } from './db/drizzle'
-import { and, eq } from 'drizzle-orm'
+import { and, eq, sql } from 'drizzle-orm'
 import { accounts, users } from './db/schema'
 import type { AdapterUser } from 'next-auth/adapters'
 
@@ -22,21 +22,12 @@ const createCustomAdapter = () => {
             console.log('Debug: DB state at execution:', !!db)
 
             try {
-                // Simplest possible query - just get one user
-                const result = await db.select().from(users).limit(1)
+                // Most basic SQL query possible
+                const result = await db.execute(sql`SELECT 1 as test`)
 
-                console.log('Debug: Simple query result:', result)
+                console.log('Debug: Basic SQL test result:', result)
 
-                // Just to test if basic queries work
-                if (!result[0]) return null
-
-                return {
-                    id: result[0].id,
-                    name: result[0].name,
-                    email: result[0].email,
-                    emailVerified: result[0].emailVerified ?? null,
-                    image: result[0].image,
-                } as AdapterUser
+                return null // Just testing if we can query at all
             } catch (error) {
                 console.error('Debug: Query error details:', {
                     error: (error as Error).message,
