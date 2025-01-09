@@ -22,42 +22,26 @@ const createCustomAdapter = () => {
             console.log('Debug: DB state at execution:', !!db)
 
             try {
-                // Use prepared statement
-                const accountQuery = db
-                    .select()
-                    .from(accounts)
-                    .prepare('get_account')
-                    .execute({
-                        provider: providerAccount.provider,
-                        providerAccountId: providerAccount.providerAccountId,
-                    })
+                // Simplest possible query - just get one user
+                const result = await db.select().from(users).limit(1)
 
-                const accountResult = await accountQuery
-                if (!accountResult[0]) return null
+                console.log('Debug: Simple query result:', result)
 
-                const userQuery = db
-                    .select()
-                    .from(users)
-                    .prepare('get_user')
-                    .execute({ userId: accountResult[0].userId })
-
-                const user = (await userQuery)[0]
-                if (!user?.email) return null
+                // Just to test if basic queries work
+                if (!result[0]) return null
 
                 return {
-                    id: user.id,
-                    name: user.name,
-                    email: user.email,
-                    emailVerified: user.emailVerified ?? null,
-                    image: user.image,
+                    id: result[0].id,
+                    name: result[0].name,
+                    email: result[0].email,
+                    emailVerified: result[0].emailVerified ?? null,
+                    image: result[0].image,
                 } as AdapterUser
             } catch (error) {
                 console.error('Debug: Query error details:', {
                     error: (error as Error).message,
                     stack: (error as Error).stack,
                     db: !!db,
-                    accounts: !!accounts,
-                    users: !!users,
                 })
                 throw error
             }
