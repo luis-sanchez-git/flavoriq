@@ -77,6 +77,17 @@ const createCustomAdapter = () => {
 export const { handlers, auth, signIn, signOut } = NextAuth({
     adapter: createCustomAdapter(),
     debug: true,
+    logger: {
+        error(code, ...message) {
+            console.error('Auth Error:', { code, message })
+        },
+        warn(code, ...message) {
+            console.warn('Auth Warning:', { code, message })
+        },
+        debug(code, ...message) {
+            console.log('Auth Debug:', { code, message })
+        },
+    },
     session: {
         strategy: 'jwt',
     },
