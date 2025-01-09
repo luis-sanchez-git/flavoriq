@@ -19,9 +19,16 @@ const createCustomAdapter = () => {
             console.log('Debug: getUserByAccount called with:', providerAccount)
 
             try {
-                const dbAccount = await db
-                    .select()
+                const result = await db
+                    .select({
+                        id: users.id,
+                        name: users.name,
+                        email: users.email,
+                        emailVerified: users.emailVerified,
+                        image: users.image,
+                    })
                     .from(accounts)
+                    .innerJoin(users, eq(accounts.userId, users.id))
                     .where(
                         and(
                             eq(accounts.provider, providerAccount.provider),
@@ -31,22 +38,19 @@ const createCustomAdapter = () => {
                             ),
                         ),
                     )
-                    .leftJoin(users, eq(accounts.userId, users.id))
-                    .then((rows) => rows[0])
+                    .limit(1)
 
-                console.log('Debug: Found account:', dbAccount)
+                console.log('Debug: Query result:', result)
 
-                if (!dbAccount?.user || !dbAccount.user.email) {
-                    return null
-                }
+                const user = result[0]
+                if (!user?.email) return null
 
                 return {
-                    ...dbAccount.user,
-                    email: dbAccount.user.email,
-                    emailVerified: dbAccount.user.emailVerified ?? null,
+                    ...user,
+                    emailVerified: user.emailVerified ?? null,
                 } as AdapterUser
             } catch (error) {
-                console.error('Debug: Database query failed:', error)
+                console.error('Debug: Query error:', error)
                 throw error
             }
         },
