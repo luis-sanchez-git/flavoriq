@@ -4,13 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { getRecipe } from '@/lib/data'
 import RecipePrompt from './recipePrompt'
 
-export default async function RecipePage({
-    params,
-}: {
-    params: { id: string }
-}) {
-    const { id } = params
-    const recipe: RecipeType = await getRecipe(id)
+type Params = Promise<{ id: string }>
+
+export default async function RecipePage(props: { params: Params }) {
+    const params = await props.params
+    const recipe: RecipeType = await getRecipe(params.id)
     if (!recipe) {
         notFound()
     }
@@ -33,7 +31,9 @@ export default async function RecipePage({
                             <ul className="list-disc pl-5 space-y-2">
                                 {recipe.ingredients.map((ingredient, index) => (
                                     <li key={index}>
-                                        {ingredient.quantity} {ingredient.unit} {ingredient.name} {ingredient.note && (
+                                        {ingredient.quantity} {ingredient.unit}{' '}
+                                        {ingredient.name}{' '}
+                                        {ingredient.note && (
                                             <span className="text-gray-500">
                                                 ({ingredient.note})
                                             </span>
