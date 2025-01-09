@@ -22,15 +22,10 @@ const createCustomAdapter = () => {
             console.log('Debug: DB state at execution:', !!db)
 
             try {
-                // First try a simpler query to test the connection
-                const testQuery = await db.select().from(users).limit(1)
-                console.log('Debug: Test query result:', testQuery)
-
-                // If we get here, try the full query
-                const result = await db
+                // Simplified query approach
+                const accountResult = await db
                     .select()
                     .from(accounts)
-                    .innerJoin(users, eq(accounts.userId, users.id))
                     .where(
                         and(
                             eq(accounts.provider, providerAccount.provider),
@@ -42,9 +37,15 @@ const createCustomAdapter = () => {
                     )
                     .limit(1)
 
-                console.log('Debug: Main query result:', result)
+                if (!accountResult[0]) return null
 
-                const user = result[0]?.user
+                const userResult = await db
+                    .select()
+                    .from(users)
+                    .where(eq(users.id, accountResult[0].userId))
+                    .limit(1)
+
+                const user = userResult[0]
                 if (!user?.email) return null
 
                 return {
@@ -56,12 +57,8 @@ const createCustomAdapter = () => {
                 } as AdapterUser
             } catch (error) {
                 console.error('Debug: Query error details:', {
-                    error:
-                        error instanceof Error
-                            ? error.message
-                            : 'Unknown error',
-                    stack:
-                        error instanceof Error ? error.stack : 'Unknown stack',
+                    error: (error as Error).message,
+                    stack: (error as Error).stack,
                     db: !!db,
                     accounts: !!accounts,
                     users: !!users,
