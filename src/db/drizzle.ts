@@ -1,7 +1,4 @@
 // src/db.ts
-import { drizzle } from "drizzle-orm/neon-http"
-import { config } from "dotenv"
-
-config({ path: ".env" }) // or .env.local
+import { drizzle } from 'drizzle-orm/neon-http'
 
 export const db = drizzle(process.env.POSTGRES_URL!)
