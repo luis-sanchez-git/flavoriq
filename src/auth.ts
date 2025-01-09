@@ -22,30 +22,26 @@ const createCustomAdapter = () => {
             console.log('Debug: DB state at execution:', !!db)
 
             try {
-                // Simplified query approach
-                const accountResult = await db
+                // Use prepared statement
+                const accountQuery = db
                     .select()
                     .from(accounts)
-                    .where(
-                        and(
-                            eq(accounts.provider, providerAccount.provider),
-                            eq(
-                                accounts.providerAccountId,
-                                providerAccount.providerAccountId,
-                            ),
-                        ),
-                    )
-                    .limit(1)
+                    .prepare('get_account')
+                    .execute({
+                        provider: providerAccount.provider,
+                        providerAccountId: providerAccount.providerAccountId,
+                    })
 
+                const accountResult = await accountQuery
                 if (!accountResult[0]) return null
 
-                const userResult = await db
+                const userQuery = db
                     .select()
                     .from(users)
-                    .where(eq(users.id, accountResult[0].userId))
-                    .limit(1)
+                    .prepare('get_user')
+                    .execute({ userId: accountResult[0].userId })
 
-                const user = userResult[0]
+                const user = (await userQuery)[0]
                 if (!user?.email) return null
 
                 return {
