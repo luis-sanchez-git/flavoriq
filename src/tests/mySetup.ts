@@ -5,7 +5,7 @@ interface WebAppFixture {
 }
 
 const myTest = test.extend<WebAppFixture>({
-    webApp: async ({ page }, use) => {
+    webApp: async ({ page }, callback) => {
         await page.goto('/recipes')
         await page.getByRole('textbox', { name: /password/i }).fill('password')
         await page
@@ -13,7 +13,7 @@ const myTest = test.extend<WebAppFixture>({
             .click()
         await page.waitForURL('/recipes')
         await expect(page.getByTestId('recipes-page-header')).toBeVisible()
-        await use(page)
+        await callback(page)
     },
 })
 
