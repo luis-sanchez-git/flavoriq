@@ -15,6 +15,12 @@ const normalizeUnit = (unit: string): string => {
         cups: 'cup',
         'tbsp.': 'tbsp',
         'tsp.': 'tsp',
+        pound: 'lb',
+        pounds: 'lb',
+        ounce: 'oz',
+        ounces: 'oz',
+        'lb.': 'lb',
+        'oz.': 'oz',
     }
     return unitMap[unit.toLowerCase()] || unit.toLowerCase()
 }
@@ -53,7 +59,7 @@ export const unitGroups: { [key: string]: UnitGroup } = {
             g: ['g', 'kg'],
             kg: ['g', 'kg'],
             oz: ['oz', 'lb'],
-            lb: ['lb', 'oz'],
+            lb: ['oz', 'lb'],
         },
     },
 }
