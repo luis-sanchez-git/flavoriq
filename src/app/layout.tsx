@@ -14,14 +14,18 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en">
-            <body className="min-h-screen flex flex-col justify-between">
-                <TopNav />
-                <main className="container mx-auto px-4 py-8">{children}</main>
-                <footer className="w-full bg-muted py-6">
-                    <div className="max-w-[1800px] mx-auto px-4 text-center text-muted-foreground">
-                        <p>&copy; 2024 FlavorIQ. All rights reserved.</p>
-                    </div>
-                </footer>
+            <body>
+                <div className="flex flex-col min-h-svh justify-between">
+                    <TopNav />
+                    <main className="container px-4 py-8 self-start flex-1">
+                        {children}
+                    </main>
+                    <footer className="w-full bg-muted py-6">
+                        <div className="max-w-[1800px] mx-auto px-4 text-center text-muted-foreground">
+                            <p>&copy; 2024 FlavorIQ. All rights reserved.</p>
+                        </div>
+                    </footer>
+                </div>
             </body>
         </html>
     )
