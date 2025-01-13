@@ -7,7 +7,6 @@ export async function fetchUserId(
     email: string | undefined,
 ): Promise<string | null> {
     if (!email) return null
-    console.log('email', email)
     const user = await db
         .select({ id: users.id })
         .from(users)

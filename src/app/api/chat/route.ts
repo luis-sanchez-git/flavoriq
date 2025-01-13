@@ -9,8 +9,6 @@ const model = process.env.OPENAI_PROMPT_RECIPE_MODEL!
 export async function POST(req: Request) {
     const { messages, recipe } = await req.json()
 
-    console.log(JSON.stringify(recipe))
-
     const result = streamText({
         model: openai(model),
         system: `

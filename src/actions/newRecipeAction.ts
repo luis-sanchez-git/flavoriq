@@ -65,7 +65,6 @@ async function insertRecipeDetails(
     recipeId: string,
     recipeData: RecipeType,
 ) {
-    console.log('recipeId', recipeId)
     const ingredientInserts = recipeData.ingredients.map(
         (ingredient: IngredientType) => ({
             recipeId: recipeId,
@@ -97,7 +96,6 @@ export async function createNewRecipe(
     try {
         // Authenticate user
         const user = await requireAuth()
-        console.log(user)
         // Validate form data
         const recipe = validateRecipeForm(formData)
         if (!recipe) {

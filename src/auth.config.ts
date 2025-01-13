@@ -13,7 +13,6 @@ export const authConfig = {
                 demoToken: { label: 'Demo Token', type: 'text' },
             },
             async authorize(credentials) {
-                console.log('Debug: Credentials:', credentials)
                 if (credentials?.demoToken === process.env.DEMO_TOKEN) {
                     return {
                         id: 'demo-user',

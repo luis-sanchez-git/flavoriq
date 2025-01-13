@@ -44,7 +44,6 @@ function CreateRecipeResult({
     isSuccess,
     isPending,
 }: CreateRecipeResultProps) {
-    console.log('error', error, 'isSuccess', isSuccess)
     if (isPending || (error === undefined && isSuccess === undefined)) {
         return null
     }
