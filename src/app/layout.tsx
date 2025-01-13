@@ -15,7 +15,7 @@ export default function RootLayout({
     return (
         <html lang="en">
             <body>
-                <div className="flex flex-col min-h-svh justify-between">
+                <div className="flex flex-col items-center min-h-svh justify-between">
                     <TopNav />
                     <main className="container px-4 py-8 self-start flex-1">
                         {children}

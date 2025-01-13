@@ -21,8 +21,8 @@ export const ScaleServings = ({ recipe }: { recipe: RecipeType }) => {
     return (
         <>
             <div>
-                <h2 className="text-2xl font-semibold mb-4">Ingredients</h2>
                 <div className="mb-4">
+                    <h2 className="text-2xl font-semibold mb-4">Ingredients</h2>
                     <label htmlFor="servings" className="mr-2">
                         Adjust servings:
                     </label>
@@ -34,55 +34,57 @@ export const ScaleServings = ({ recipe }: { recipe: RecipeType }) => {
                         onChange={(e) => setServings(Number(e.target.value))}
                         className="border rounded px-2 py-1 w-20"
                     />
+                    <ul className="list-disc pl-5 space-y-2">
+                        {recipe.ingredients.map((ingredient, index) => {
+                            const scaledIngredient = scaleIngredient(
+                                ingredient,
+                                recipe.serving,
+                                servings,
+                                preferredUnits[index],
+                            )
+                            const compatibleUnits = ingredient.unit
+                                ? getCompatibleUnits(ingredient.unit)
+                                : []
+
+                            return (
+                                <li
+                                    key={index}
+                                    className="flex items-center gap-2 flex-wrap"
+                                >
+                                    <span>{scaledIngredient.quantity}</span>
+                                    {compatibleUnits.length > 1 ? (
+                                        <select
+                                            value={scaledIngredient.unit}
+                                            onChange={(e) =>
+                                                handleUnitChange(
+                                                    index,
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="border rounded px-1 py-0.5"
+                                        >
+                                            {compatibleUnits.map((unit) => (
+                                                <option key={unit} value={unit}>
+                                                    {unit}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    ) : (
+                                        <span>{scaledIngredient.unit}</span>
+                                    )}
+                                    <span>{scaledIngredient.name}</span>
+                                    {scaledIngredient.note && (
+                                        <span className="text-gray-500">
+                                            ({scaledIngredient.note})
+                                        </span>
+                                    )}
+                                </li>
+                            )
+                        })}
+                    </ul>
                 </div>
             </div>
-            <div>
-                <ul className="list-disc pl-5 space-y-2">
-                    {recipe.ingredients.map((ingredient, index) => {
-                        const scaledIngredient = scaleIngredient(
-                            ingredient,
-                            recipe.serving,
-                            servings,
-                            preferredUnits[index],
-                        )
-                        const compatibleUnits = ingredient.unit
-                            ? getCompatibleUnits(ingredient.unit)
-                            : []
-
-                        return (
-                            <li key={index} className="flex items-center gap-2">
-                                <span>{scaledIngredient.quantity}</span>
-                                {compatibleUnits.length > 1 ? (
-                                    <select
-                                        value={scaledIngredient.unit}
-                                        onChange={(e) =>
-                                            handleUnitChange(
-                                                index,
-                                                e.target.value,
-                                            )
-                                        }
-                                        className="border rounded px-1 py-0.5"
-                                    >
-                                        {compatibleUnits.map((unit) => (
-                                            <option key={unit} value={unit}>
-                                                {unit}
-                                            </option>
-                                        ))}
-                                    </select>
-                                ) : (
-                                    <span>{scaledIngredient.unit}</span>
-                                )}
-                                <span>{scaledIngredient.name}</span>
-                                {scaledIngredient.note && (
-                                    <span className="text-gray-500">
-                                        ({scaledIngredient.note})
-                                    </span>
-                                )}
-                            </li>
-                        )
-                    })}
-                </ul>
-            </div>
+            <div></div>
         </>
     )
 }
