@@ -5,11 +5,13 @@ import { RecipeType } from '@/schemas/recipeSchema'
 import { scaleIngredient } from './scaleServingsUtil'
 import { Button } from '@/components/ui/button'
 import CookingMode from './cooking-mode'
-import { ChefHat } from 'lucide-react'
+import { ChefHat, Edit } from 'lucide-react'
 import { ScaleServings } from './scaleServings'
+import { EditRecipeForm } from './editRecipeForm'
 
 export const RecipeView = ({ recipe }: { recipe: RecipeType }) => {
     const [isCookingMode, setIsCookingMode] = useState(false)
+    const [isEditing, setIsEditing] = useState(false)
     const [servingScale, setServingScale] = useState(1)
 
     const scaledRecipe = {
@@ -17,6 +19,15 @@ export const RecipeView = ({ recipe }: { recipe: RecipeType }) => {
         ingredients: recipe.ingredients.map((ingredient) =>
             scaleIngredient(ingredient, recipe.serving, servingScale),
         ),
+    }
+
+    if (isEditing) {
+        return (
+            <EditRecipeForm
+                recipe={recipe}
+                onCancel={() => setIsEditing(false)}
+            />
+        )
     }
 
     if (isCookingMode) {
@@ -32,7 +43,9 @@ export const RecipeView = ({ recipe }: { recipe: RecipeType }) => {
         <>
             <div className="flex justify-between items-center gap-4 mb-6">
                 <div>
-                    <h2 className="text-2xl font-semibold mb-4">Details</h2>
+                    <div className="flex items-center gap-4">
+                        <h2 className="text-2xl font-semibold mb-4">Details</h2>
+                    </div>
                     <p>
                         <strong>Original Servings:</strong> {recipe.serving}
                     </p>
@@ -40,14 +53,23 @@ export const RecipeView = ({ recipe }: { recipe: RecipeType }) => {
                         <strong>Preparation Time:</strong> {recipe.duration}
                     </p>
                 </div>
-                <Button
-                    variant="outline"
-                    onClick={() => setIsCookingMode(true)}
-                    className="flex items-center gap-2"
-                >
-                    <ChefHat className="h-5 w-5" />
-                    Enter Cooking Mode
-                </Button>
+                <div className="flex items-center gap-4">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setIsEditing(true)}
+                    >
+                        <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                        variant="outline"
+                        onClick={() => setIsCookingMode(true)}
+                        className="flex items-center gap-2"
+                    >
+                        <ChefHat className="h-5 w-5" />
+                        Enter Cooking Mode
+                    </Button>
+                </div>
             </div>
 
             <div className="flex gap-6">
