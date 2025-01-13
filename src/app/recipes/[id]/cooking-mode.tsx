@@ -154,12 +154,22 @@ export default function CookingMode({ recipe, onExit }: CookingModeProps) {
                                 Ingredients
                             </h2>
                             <ul className="list-disc pl-5 space-y-2">
-                                {highlightIngredients(
-                                    recipe.ingredients.map(
-                                        (ingredient) => ingredient.name,
-                                    ),
-                                    currentStep.description,
-                                )}
+                                {recipe.ingredients.map((ingredient, index) => {
+                                    const isHighlighted = highlightIngredients(
+                                        [ingredient.name],
+                                        currentStep.description,
+                                    )[0].props.className
+
+                                    return (
+                                        <li
+                                            key={index}
+                                            className={isHighlighted}
+                                        >
+                                            {ingredient.quantity}{' '}
+                                            {ingredient.unit} {ingredient.name}
+                                        </li>
+                                    )
+                                })}
                             </ul>
                         </div>
                     </div>

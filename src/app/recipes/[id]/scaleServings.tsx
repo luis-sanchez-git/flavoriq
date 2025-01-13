@@ -5,8 +5,17 @@ import { useState } from 'react'
 import { scaleIngredient } from './scaleServingsUtil'
 import { getCompatibleUnits } from './unitConversions'
 
-export const ScaleServings = ({ recipe }: { recipe: RecipeType }) => {
-    const [servings, setServings] = useState(recipe.serving)
+interface ScaleServingsProps {
+    recipe: RecipeType
+    onScaleChange: (scale: number) => void
+    currentScale: number
+}
+
+export const ScaleServings = ({
+    recipe,
+    onScaleChange,
+    currentScale,
+}: ScaleServingsProps) => {
     const [preferredUnits, setPreferredUnits] = useState<{
         [key: string]: string
     }>({})
@@ -30,8 +39,8 @@ export const ScaleServings = ({ recipe }: { recipe: RecipeType }) => {
                         type="number"
                         id="servings"
                         min="1"
-                        value={servings}
-                        onChange={(e) => setServings(Number(e.target.value))}
+                        value={currentScale}
+                        onChange={(e) => onScaleChange(Number(e.target.value))}
                         className="border rounded px-2 py-1 w-20"
                     />
                     <ul className="list-disc pl-5 space-y-2">
@@ -39,7 +48,7 @@ export const ScaleServings = ({ recipe }: { recipe: RecipeType }) => {
                             const scaledIngredient = scaleIngredient(
                                 ingredient,
                                 recipe.serving,
-                                servings,
+                                currentScale,
                                 preferredUnits[index],
                             )
                             const compatibleUnits = ingredient.unit

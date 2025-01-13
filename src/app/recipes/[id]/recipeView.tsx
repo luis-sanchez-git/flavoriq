@@ -2,18 +2,27 @@
 
 import { useState } from 'react'
 import { RecipeType } from '@/schemas/recipeSchema'
-import { ScaleServings } from './scaleServings'
+import { scaleIngredient } from './scaleServingsUtil'
 import { Button } from '@/components/ui/button'
 import CookingMode from './cooking-mode'
 import { ChefHat } from 'lucide-react'
+import { ScaleServings } from './scaleServings'
 
 export const RecipeView = ({ recipe }: { recipe: RecipeType }) => {
     const [isCookingMode, setIsCookingMode] = useState(false)
+    const [servingScale, setServingScale] = useState(1)
+
+    const scaledRecipe = {
+        ...recipe,
+        ingredients: recipe.ingredients.map((ingredient) =>
+            scaleIngredient(ingredient, recipe.serving, servingScale),
+        ),
+    }
 
     if (isCookingMode) {
         return (
             <CookingMode
-                recipe={recipe}
+                recipe={scaledRecipe}
                 onExit={() => setIsCookingMode(false)}
             />
         )
@@ -43,7 +52,11 @@ export const RecipeView = ({ recipe }: { recipe: RecipeType }) => {
 
             <div className="flex gap-6">
                 <div className="flex gap-8">
-                    <ScaleServings recipe={recipe} />
+                    <ScaleServings
+                        recipe={recipe}
+                        onScaleChange={setServingScale}
+                        currentScale={servingScale}
+                    />
                 </div>
 
                 <div>
