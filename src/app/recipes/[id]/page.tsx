@@ -15,9 +15,9 @@ export default async function RecipePage(props: { params: Params }) {
     }
 
     return (
-        <div className="container gap-4 flex flex-col">
+        <div className="container gap-4 flex flex-col h-full">
             <RecipePrompt recipe={recipe} />
-            <Card>
+            <Card className="h-full flex flex-col">
                 <CardHeader>
                     <CardTitle className="text-3xl font-bold">
                         {recipe.name}

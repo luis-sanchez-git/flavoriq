@@ -7,8 +7,8 @@ export default function RecipeLayout({
     children: React.ReactNode
 }) {
     return (
-        <section>
-            <div className="container mx-auto px-4 py-8">
+        <section className="flex-1">
+            <div className="container mx-auto px-4 py-8 h-full">
                 <Link href="/recipes">
                     <Button variant="outline" className="mb-4">
                         ← Back to Recipes

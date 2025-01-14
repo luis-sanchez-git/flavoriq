@@ -120,8 +120,8 @@ export default function CookingMode({ recipe, onExit }: CookingModeProps) {
     }, [goToPreviousStep, goToNextStep])
 
     return (
-        <div className="container mx-auto px-4 py-8">
-            <div className="max-w-3xl mx-auto h-full flex flex-col">
+        <div className="mx-auto px-4 py-8 h-full">
+            <div className="max-w-3xl mx-auto h-full flex flex-col flex-1">
                 <div className="flex flex-row justify-between items-center mb-6">
                     <Button variant="outline" onClick={onExit}>
                         <ArrowLeft className="h-16 w-16" />
@@ -135,45 +135,51 @@ export default function CookingMode({ recipe, onExit }: CookingModeProps) {
                         }
                         className="mb-4"
                     />
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-grow">
-                        <div>
-                            <h2 className="text-2xl font-semibold mb-4">
-                                Current Step
-                            </h2>
-                            <p className="text-lg mb-4">
-                                {highlightStep(
-                                    currentStep.description,
-                                    recipe.ingredients.map(
-                                        (ingredient) => ingredient.name,
-                                    ),
-                                )}
-                            </p>
-                        </div>
-                        <div>
-                            <h2 className="text-2xl font-semibold mb-4">
-                                Ingredients
-                            </h2>
-                            <ul className="list-disc pl-5 space-y-2">
-                                {recipe.ingredients.map((ingredient, index) => {
-                                    const isHighlighted = highlightIngredients(
-                                        [ingredient.name],
+                    <div className="overflow-auto flex-1">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <h2 className="text-2xl font-semibold mb-4">
+                                    Current Step
+                                </h2>
+                                <p className="text-lg mb-4">
+                                    {highlightStep(
                                         currentStep.description,
-                                    )[0].props.className
+                                        recipe.ingredients.map(
+                                            (ingredient) => ingredient.name,
+                                        ),
+                                    )}
+                                </p>
+                            </div>
+                            <div>
+                                <h2 className="text-2xl font-semibold mb-4">
+                                    Ingredients
+                                </h2>
+                                <ul className="list-disc pl-5 space-y-2">
+                                    {recipe.ingredients.map(
+                                        (ingredient, index) => {
+                                            const isHighlighted =
+                                                highlightIngredients(
+                                                    [ingredient.name],
+                                                    currentStep.description,
+                                                )[0].props.className
 
-                                    return (
-                                        <li
-                                            key={index}
-                                            className={isHighlighted}
-                                        >
-                                            {ingredient.quantity}{' '}
-                                            {ingredient.unit} {ingredient.name}
-                                        </li>
-                                    )
-                                })}
-                            </ul>
+                                            return (
+                                                <li
+                                                    key={index}
+                                                    className={isHighlighted}
+                                                >
+                                                    {ingredient.quantity}{' '}
+                                                    {ingredient.unit}{' '}
+                                                    {ingredient.name}
+                                                </li>
+                                            )
+                                        },
+                                    )}
+                                </ul>
+                            </div>
                         </div>
                     </div>
-                    <div className="flex justify-between mt-6">
+                    <div className="flex justify-between mt-6 pt-4 border-t">
                         <Button
                             onClick={goToPreviousStep}
                             disabled={currentStepIndex === 0}
