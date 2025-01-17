@@ -83,7 +83,7 @@ export function AddRecipeDialog() {
             <DialogTrigger asChild>
                 <AddRecipeButton />
             </DialogTrigger>
-            <DialogContent className="bg-amber-50 min-w-fit max-h-svh overflow-auto">
+            <DialogContent className="min-w-fit max-h-svh overflow-auto">
                 <DialogHeader>
                     <DialogTitle>Add your recipe</DialogTitle>
                     <DialogDescription>

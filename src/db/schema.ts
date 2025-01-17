@@ -97,6 +97,7 @@ export const mealBaskets = pgTable('mealBasket', {
         .notNull()
         .references(() => users.id, { onDelete: 'cascade' }),
     name: varchar('name', { length: 255 }).notNull(),
+    description: text('description'),
 })
 
 export const mealBasketRecipes = pgTable('mealBasketRecipes', {

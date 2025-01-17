@@ -1,0 +1,1 @@
+ALTER TABLE "mealBasket" ADD COLUMN "description" text;
