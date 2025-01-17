@@ -15,6 +15,13 @@
       "when": 1736369353550,
       "tag": "0001_stormy_ego",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1737078352591,
+      "tag": "0002_tiresome_white_queen",
+      "breakpoints": true
     }
   ]
 }

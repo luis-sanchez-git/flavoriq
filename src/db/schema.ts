@@ -90,3 +90,22 @@ export const steps = pgTable('stepsTable', {
     stepNumber: integer('stepNumber').notNull(),
     description: text('stepContent').notNull(),
 })
+
+export const mealBaskets = pgTable('mealBasket', {
+    id: uuid('basketId').primaryKey().defaultRandom(),
+    userId: text('userId')
+        .notNull()
+        .references(() => users.id, { onDelete: 'cascade' }),
+    name: varchar('name', { length: 255 }).notNull(),
+})
+
+export const mealBasketRecipes = pgTable('mealBasketRecipes', {
+    id: uuid('basketRecipeId').primaryKey().defaultRandom(),
+    mealBasketId: uuid('basketId')
+        .references(() => mealBaskets.id, { onDelete: 'cascade' })
+        .notNull(),
+    recipeId: uuid('recipeId')
+        .references(() => recipes.id, { onDelete: 'cascade' })
+        .notNull(),
+    plannedServings: integer('plannedServings').notNull(),
+})
