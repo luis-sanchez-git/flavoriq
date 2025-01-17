@@ -25,6 +25,7 @@ import {
     FormMessage,
 } from '@/components/ui/form'
 import { z } from 'zod'
+import { PlusCircle } from 'lucide-react'
 
 interface AddMealBasketDialogProps {
     isOpen: boolean
@@ -55,7 +56,10 @@ export default function AddMealBasketDialog() {
 
     return (
         <>
-            <Button onClick={() => setOpen(true)}>Add New Basket</Button>
+            <Button onClick={() => setOpen(true)}>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Add New Basket
+            </Button>
             <Dialog open={open} onOpenChange={setOpen}>
                 <DialogContent>
                     <DialogHeader>
