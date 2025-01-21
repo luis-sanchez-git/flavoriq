@@ -4,6 +4,7 @@ import {
 } from '@/server/queries/meal-baskets'
 import AddRecipeToBasket from './add-recipe-to-basket'
 import ServingsSection from './servings-section'
+import BasketIngredients from './basket-ingredients'
 
 type Params = Promise<{ id: string }>
 export default async function MealBasketPage(props: { params: Params }) {
@@ -24,6 +25,7 @@ export default async function MealBasketPage(props: { params: Params }) {
                 />
             </div>
             <ServingsSection basket={basket} />
+            <BasketIngredients basket={basket} />
         </div>
     )
 }

@@ -21,6 +21,7 @@ type JoinedRecipe = {
     stepDescription: string | null
     ingredientUnit: string | null
     ingredientNote: string | null
+    ingredientCategory: string | null
 }
 
 type ExtendedRecipeType = RecipeType & {
@@ -40,6 +41,7 @@ const IngredientSchema = z.object({
     quantity: z.number(),
     unit: z.string().optional(),
     note: z.string().optional(),
+    category: z.string().optional(),
 })
 
 function validateStep(stepData: JoinedRecipe): StepType | null {
@@ -60,6 +62,7 @@ function validateIngredient(
         quantity: ingredientData.ingredientQuantity,
         unit: ingredientData.ingredientUnit,
         note: ingredientData.ingredientNote,
+        category: ingredientData.ingredientCategory,
     })
     return parsed.success ? parsed.data : null
 }
@@ -67,7 +70,8 @@ function validateIngredient(
 function formatRecipes(recipeData: JoinedRecipe[]) {
     const recipesMap = new Map<string, ExtendedRecipeType>()
     recipeData.forEach((row) => {
-        const { recipeId, recipeName, serving, duration } = row
+        const { recipeId, recipeName, serving, duration, ingredientCategory } =
+            row
 
         const entryExists = recipesMap.has(recipeId)
         if (!entryExists) {
@@ -102,6 +106,7 @@ function formatRecipes(recipeData: JoinedRecipe[]) {
     })
 
     return [...recipesMap.values()].map((recipe) => {
+        console.log(recipe)
         delete recipe.ingredientIds
         delete recipe.stepIds
         return recipe
@@ -139,6 +144,7 @@ export async function getRecipes(filters?: GetRecipeFilter) {
                 ingredientNote: recipeIngredients.note,
                 ingredientQuantity: recipeIngredients.quantity,
                 ingredientUnit: recipeIngredients.unit,
+                ingredientCategory: recipeIngredients.category,
                 stepId: steps.id,
                 stepNumber: steps.stepNumber,
                 stepDescription: steps.description,

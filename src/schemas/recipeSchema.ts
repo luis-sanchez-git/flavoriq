@@ -18,6 +18,12 @@ export const RecipeSchema = z.object({
                 .describe('ingredient name in singular form. (E.g. garlic)')
                 .describe('list of ingredients'),
             note: z.string().describe('note of the ingredient').optional(),
+            category: z
+                .string()
+                .describe(
+                    'category of the ingredient (e.g. fruit, vegetable, meat, etc.)',
+                )
+                .optional(),
         }),
     ),
     steps: z
