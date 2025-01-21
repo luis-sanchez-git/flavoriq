@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/card'
 import { Trash2Icon } from 'lucide-react'
 import Link from 'next/link'
-import { deleteMealBasketAction } from '@/actions/deleteMealBasketAction'
+import { deleteMealBasketAction } from '@/actions/MealBasketAction'
 
 type BasketListProps = {
     baskets: Array<{

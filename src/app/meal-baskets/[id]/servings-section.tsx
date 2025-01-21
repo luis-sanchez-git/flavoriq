@@ -13,7 +13,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Form, FormControl, FormField, FormItem } from '@/components/ui/form'
 import { BasketWithRecipes } from '@/schemas/mealBasketsSchema'
-import { updateServings } from './actions'
+import { updateServings } from '@/actions/MealBasketAction'
 import { useActionState } from 'react'
 import { z } from 'zod'
 const ServingsFormSchema = z.record(z.string(), z.number())

@@ -1,17 +1,46 @@
 'use server'
 
 import { db } from '@/db/drizzle'
-import { mealBasketRecipes } from '@/db/schema'
+import { mealBasketRecipes, mealBaskets } from '@/db/schema'
 import { requireAuth } from '@/lib/auth'
+import { RecipeError } from '@/errors/errors'
 import { fetchUserId } from '@/lib/db'
-
+import { eq, and } from 'drizzle-orm'
+import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
-import { and, eq } from 'drizzle-orm'
 
 const addRecipeToBasketSchema = z.object({
     recipeId: z.string().uuid(),
     basketId: z.string().uuid(),
 })
+
+const updateServingsSchema = z.record(
+    z.string(),
+    z.coerce.number().min(1).int(),
+)
+
+export async function deleteMealBasketAction(id: string) {
+    try {
+        const user = await requireAuth()
+        const userId = await fetchUserId(user.email)
+        if (!userId) {
+            throw new RecipeError('User not found')
+        }
+
+        await db.delete(mealBaskets).where(and(eq(mealBaskets.id, id)))
+        revalidatePath('/meal-baskets')
+        return { success: true }
+    } catch (e) {
+        if (e instanceof RecipeError) {
+            console.error(`[RecipeError]: ${e.message}`, {
+                details: e.details,
+            })
+        } else {
+            console.error(`[UnhandledError]: ${e}`)
+        }
+        return { success: false }
+    }
+}
 
 export async function addRecipeToBasket(basketId: string, recipeId: string) {
     const user = await requireAuth()
@@ -39,10 +68,6 @@ export async function addRecipeToBasket(basketId: string, recipeId: string) {
     return { success: true }
 }
 
-const updateServingsSchema = z.record(
-    z.string(),
-    z.coerce.number().min(1).int(),
-)
 export async function updateServings(
     basketId: string,
     prevState: { isSuccess: boolean; error?: string },

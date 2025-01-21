@@ -10,7 +10,7 @@ import {
     FormMessage,
 } from '@/components/ui/form'
 
-import { addRecipeToBasket } from './actions'
+import { addRecipeToBasket } from '@/actions/MealBasketAction'
 import { useParams, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import {
