@@ -2,7 +2,8 @@ import { db } from '@/db/drizzle'
 import { mealBaskets, mealBasketRecipes, recipes } from '@/db/schema'
 import { requireAuth } from '@/lib/auth'
 import { fetchUserId } from '@/lib/db'
-import { eq, inArray, sql } from 'drizzle-orm'
+import { eq, sql, and, not, exists } from 'drizzle-orm'
+import { getRecipes } from './recipes'
 
 export type MealBasket = {
     id: string
@@ -40,35 +41,48 @@ export async function getMealBasket(id: string) {
         throw new Error('User not found')
     }
 
-    const basketWithRecipes = await db
+    // Get basket info
+    const basket = await db
         .select({
-            basketName: mealBaskets.name,
-            recipeName: recipes.name,
-            plannedServings: mealBasketRecipes.plannedServings,
-            // Add other recipe fields you need here
+            id: mealBaskets.id,
+            name: mealBaskets.name,
         })
         .from(mealBaskets)
-        .innerJoin(
-            mealBasketRecipes,
-            eq(mealBaskets.id, mealBasketRecipes.mealBasketId),
-        )
-        .innerJoin(recipes, eq(mealBasketRecipes.recipeId, recipes.id))
         .where(eq(mealBaskets.id, id))
+        .limit(1)
 
-    // Transform the flat results into your desired nested structure
-    const response = {
-        name: basketWithRecipes[0]?.basketName,
-        recipes: basketWithRecipes.map((row) => ({
-            recipeName: row.recipeName,
-            servings: row.plannedServings,
-            // You can add the ingredients query here when ready
-            ingredients: [],
-        })),
+    if (!basket[0]) {
+        throw new Error('Basket not found')
     }
-    return response
+
+    // Get recipe IDs in this basket
+    const basketRecipes = await db
+        .select({
+            recipeId: mealBasketRecipes.recipeId,
+            plannedServings: mealBasketRecipes.plannedServings,
+        })
+        .from(mealBasketRecipes)
+        .where(eq(mealBasketRecipes.mealBasketId, id))
+
+    // Get full recipe data
+    const recipeIds = basketRecipes.map((r) => r.recipeId)
+    const recipes = await getRecipes({ recipeIds })
+
+    // Merge planned servings with recipe data
+    const recipesWithServings = recipes.map((recipe) => ({
+        ...recipe,
+        plannedServings:
+            basketRecipes.find((br) => br.recipeId === recipe.id)
+                ?.plannedServings ?? 1,
+    }))
+
+    return {
+        ...basket[0],
+        recipes: recipesWithServings,
+    }
 }
 
-export async function getUserRecipes() {
+export async function getServingsRecipes() {
     const user = await requireAuth()
     const userId = await fetchUserId(user.email)
 
@@ -89,22 +103,38 @@ export async function getUserRecipes() {
             eq(mealBasketRecipes.mealBasketId, mealBaskets.id),
         )
         .where(eq(recipes.userId, userId))
-        .groupBy(recipes.id)
+        .groupBy(recipes.id, mealBasketRecipes.recipeId)
+
+    console.log(userRecipes)
 
     return userRecipes
 }
 
-export async function addRecipeToBasket(basketId: string, recipeId: string) {
+export async function getAvailableRecipes(basketId: string) {
     const user = await requireAuth()
     const userId = await fetchUserId(user.email)
 
     if (!userId) {
         throw new Error('User not found')
     }
+    // get recipes that are in this basket
+    const basketRecipes = db
+        .select()
+        .from(mealBasketRecipes)
+        .where(
+            and(
+                eq(mealBasketRecipes.recipeId, recipes.id),
+                eq(mealBasketRecipes.mealBasketId, basketId),
+            ),
+        )
+    // get recipes that are not in this basket
+    const availableRecipes = await db
+        .select({
+            id: recipes.id,
+            name: recipes.name,
+        })
+        .from(recipes)
+        .where(and(eq(recipes.userId, userId), not(exists(basketRecipes))))
 
-    await db.insert(mealBasketRecipes).values({
-        mealBasketId: basketId,
-        recipeId: recipeId,
-        plannedServings: 1, // Default to 1 serving
-    })
+    return availableRecipes
 }

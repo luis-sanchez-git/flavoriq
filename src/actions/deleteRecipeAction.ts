@@ -3,7 +3,7 @@
 import { db } from '@/db/drizzle'
 import { recipes } from '@/db/schema'
 import { requireAuth } from '@/lib/auth'
-import { RecipeError } from '@/lib/data'
+import { RecipeError } from '@/errors/errors'
 import { fetchUserId } from '@/lib/db'
 import { eq } from 'drizzle-orm'
 import { and } from 'drizzle-orm'

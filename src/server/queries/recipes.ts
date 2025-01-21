@@ -3,18 +3,10 @@ import { recipeIngredients, recipes, steps } from '@/db/schema'
 import { requireAuth } from '@/lib/auth'
 import { fetchUserId } from '@/lib/db'
 import { IngredientType, RecipeType, StepType } from '@/schemas/recipeSchema'
-import { and, eq } from 'drizzle-orm'
-import { catchError } from './utils'
+import { and, eq, inArray } from 'drizzle-orm'
+import { catchError } from '../../lib/utils'
 import { z } from 'zod'
-
-export class RecipeError extends Error {
-    details?: any
-
-    constructor(message: string, details?: any) {
-        super(message)
-        this.details = details
-    }
-}
+import { RecipeError } from '@/errors/errors'
 
 type JoinedRecipe = {
     recipeId: string
@@ -118,6 +110,7 @@ function formatRecipes(recipeData: JoinedRecipe[]) {
 
 type GetRecipeFilter = {
     recipeId?: string
+    recipeIds?: string[]
 }
 
 export async function getRecipes(filters?: GetRecipeFilter) {
@@ -132,6 +125,8 @@ export async function getRecipes(filters?: GetRecipeFilter) {
 
         const where = [eq(recipes.userId, userId)]
         if (filters?.recipeId) where.push(eq(recipes.id, filters.recipeId))
+        if (filters?.recipeIds)
+            where.push(inArray(recipes.id, filters.recipeIds))
 
         const recipeData = await db
             .select({

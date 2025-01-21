@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import { RecipeType } from '@/schemas/recipeSchema'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { getRecipe } from '@/lib/data'
+import { getRecipe } from '@/server/queries/recipes'
 import RecipePrompt from './recipePrompt'
 import { RecipeView } from './recipeView'
 

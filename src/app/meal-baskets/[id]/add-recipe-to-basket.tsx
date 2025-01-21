@@ -33,22 +33,22 @@ import {
 } from '@/components/ui/select'
 import { FormField } from '@/components/ui/form'
 import { PlusCircle } from 'lucide-react'
-
-type Recipe = {
-    id: string
-    name: string
-    mealBasketIds: string[]
-}
+import { RecipeType } from '@/schemas/recipeSchema'
 
 const FormSchema = z.object({
     recipeId: z.string().min(1, 'Please select a recipe'),
 })
 
+type AvailableRecipe = {
+    id: string
+    name: string
+}
+
 export default function AddRecipeToBasket({
-    recipes,
+    availableRecipes,
     basketId,
 }: {
-    recipes: Recipe[]
+    availableRecipes: AvailableRecipe[]
     basketId: string
 }) {
     const form = useForm<z.infer<typeof FormSchema>>({
@@ -56,10 +56,6 @@ export default function AddRecipeToBasket({
     })
     const [open, setOpen] = useState(false)
     const params = useParams()
-
-    const filteredRecipes = recipes.filter(
-        (recipe) => !recipe.mealBasketIds.includes(basketId),
-    )
 
     const handleAddRecipeToBasket = async () => {
         await addRecipeToBasket(basketId, form.getValues('recipeId'))
@@ -98,7 +94,7 @@ export default function AddRecipeToBasket({
                                                 <SelectValue placeholder="Select a recipe" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                {filteredRecipes.map(
+                                                {availableRecipes.map(
                                                     (recipe) => (
                                                         <SelectItem
                                                             key={recipe.id}

@@ -3,7 +3,7 @@
 import { db } from '@/db/drizzle'
 import { mealBaskets } from '@/db/schema'
 import { requireAuth } from '@/lib/auth'
-import { RecipeError } from '@/lib/data'
+import { RecipeError } from '@/errors/errors'
 import { fetchUserId } from '@/lib/db'
 import { eq, and } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'

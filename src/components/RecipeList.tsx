@@ -1,6 +1,5 @@
-import { getRecipes } from '@/lib/data'
+import { getRecipes } from '@/server/queries/recipes'
 import RecipeCard from './ui/recipe-card'
-
 
 export default async function RecipeList() {
     const recipes = await getRecipes()
