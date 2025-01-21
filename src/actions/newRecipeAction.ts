@@ -15,6 +15,7 @@ import { recipeIngredients, recipes, steps } from '@/db/schema'
 import { fetchUserId } from '@/lib/db'
 import { requireAuth } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
+import { categorizeIngredient } from '@/lib/categorizeIngredient'
 
 export type CreateRecipeState = {
     isSuccess?: boolean
@@ -65,15 +66,20 @@ async function insertRecipeDetails(
     recipeId: string,
     recipeData: RecipeType,
 ) {
-    const ingredientInserts = recipeData.ingredients.map(
-        (ingredient: IngredientType) => ({
+    // Add categorization for ingredients
+    const ingredientInserts = await Promise.all(
+        recipeData.ingredients.map(async (ingredient: IngredientType) => ({
             recipeId: recipeId,
             name: ingredient.name,
             quantity: ingredient.quantity,
             userId: userId,
             unit: ingredient.unit,
             note: ingredient.note,
-        }),
+            category: await categorizeIngredient(
+                ingredient.name,
+                ingredient.note,
+            ),
+        })),
     )
     await db.insert(recipeIngredients).values(ingredientInserts)
 

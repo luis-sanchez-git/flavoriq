@@ -64,7 +64,16 @@ export const recipes = pgTable(
     },
 )
 
-export const recipeIngredients = pgTable('recipeIngredients', {
+export const ingredientCategories = [
+    'Produce',
+    'Meat & Seafood',
+    'Dairy & Eggs',
+    'Pantry',
+    'Frozen',
+    'Other',
+] as const
+
+export const recipeIngredients = pgTable('recipe_ingredients', {
     id: uuid('ingredientId').primaryKey().defaultRandom(),
     recipeId: uuid('recipeId')
         .references(() => recipes.id, { onDelete: 'cascade' })
@@ -76,6 +85,7 @@ export const recipeIngredients = pgTable('recipeIngredients', {
     quantity: real('ingredientQuantity').$type<number>(),
     unit: varchar('unit', { length: 255 }),
     note: text('ingredientNote'), // For additional context like "favorite rub seasoning" or unknown units
+    category: text('category').$type<(typeof ingredientCategories)[number]>(),
 })
 
 export const steps = pgTable('stepsTable', {

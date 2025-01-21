@@ -8,6 +8,7 @@ import { fetchUserId } from '@/lib/db'
 import { RecipeType } from '@/schemas/recipeSchema'
 import { eq } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
+import { categorizeIngredient } from '@/lib/categorizeIngredient'
 
 // since updating is not common, we delete and insert instead of diffing
 export async function updateRecipe(
@@ -36,16 +37,22 @@ export async function updateRecipe(
     await db.delete(steps).where(eq(steps.recipeId, recipeId))
 
     // Insert new ingredients
-    await db.insert(recipeIngredients).values(
-        updatedRecipe.ingredients.map((ingredient) => ({
+    const ingredientsWithCategories = await Promise.all(
+        updatedRecipe.ingredients.map(async (ingredient) => ({
             recipeId,
             userId: userId,
             name: ingredient.name,
             quantity: ingredient.quantity,
             unit: ingredient.unit,
             note: ingredient.note,
+            category: await categorizeIngredient(
+                ingredient.name,
+                ingredient.note,
+            ),
         })),
     )
+
+    await db.insert(recipeIngredients).values(ingredientsWithCategories)
 
     // Insert new steps
     await db.insert(steps).values(
