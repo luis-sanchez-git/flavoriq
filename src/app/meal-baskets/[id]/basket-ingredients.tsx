@@ -1,6 +1,5 @@
 import { ingredientCategories } from '@/db/schema'
 import { scaleIngredient } from '@/app/recipes/[id]/scaleServingsUtil'
-import type { MealBasket } from '@/server/queries/meal-baskets'
 import { BasketWithRecipes } from '@/schemas/mealBasketsSchema'
 
 export default function BasketIngredients({
@@ -8,14 +7,12 @@ export default function BasketIngredients({
 }: {
     basket: BasketWithRecipes
 }) {
-    console.log(basket)
     // Collect and scale all ingredients from all recipes
     const scaledIngredients = basket.recipes.flatMap((recipe) =>
         recipe.ingredients.map((ing) =>
             scaleIngredient(ing, recipe.serving, recipe.plannedServings),
         ),
     )
-    console.log(scaledIngredients)
 
     // Group ingredients by category
     const categorizedIngredients = ingredientCategories.reduce(
