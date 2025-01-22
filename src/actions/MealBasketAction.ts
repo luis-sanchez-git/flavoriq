@@ -88,8 +88,6 @@ export async function updateServings(
         throw new Error('Invalid form data')
     }
 
-    console.log(Object.entries(data))
-
     // Update each recipe's servings in the basket
     await Promise.all(
         Object.entries(data).map(([recipeId, servings]) =>

@@ -28,7 +28,6 @@ type IngredientToCategorizeBatch = {
 export async function categorizeIngredientsBatch(
     ingredients: IngredientToCategorizeBatch[],
 ): Promise<IngredientCategory[]> {
-    console.log('ingredients', ingredients)
     const [error, result] = await catchError(
         generateObject({
             model: openai(modelName),
