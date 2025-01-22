@@ -26,7 +26,6 @@ export const ScaleServings = ({
             [ingredientIndex]: newUnit,
         }))
     }
-    console.log(recipe)
 
     return (
         <>
