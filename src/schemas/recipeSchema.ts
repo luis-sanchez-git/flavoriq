@@ -9,7 +9,7 @@ export const IngredientCategorySchema = z
         'Frozen',
         'Other',
     ])
-    .describe('category of the ingredient')
+    .describe('category of the ingredient in a grocery store')
 
 export type IngredientCategory = z.infer<typeof IngredientCategorySchema>
 

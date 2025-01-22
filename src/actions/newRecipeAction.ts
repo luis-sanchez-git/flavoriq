@@ -94,6 +94,7 @@ async function insertRecipeDetails(
 
     // Start categorization after main inserts complete
     setTimeout(() => {
+        console.log('categorizing ingredients')
         categorizeIngredientsBatch(
             recipeData.ingredients.map((ing) => ({
                 name: ing.name,

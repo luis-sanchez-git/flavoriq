@@ -7,15 +7,18 @@ import {
     IngredientCategorySchema,
 } from '@/schemas/recipeSchema'
 
-const modelName = process.env.OPENAI_CATEGORIZE_INGREDIENT_MODEL!
+const modelName = process.env.OPENAI_CATEGORIZE_MODEL!
 
 // Schema for categorizing multiple ingredients at once
-const CategorizedIngredientsSchema = z.array(
-    z.object({
-        name: z.string(),
-        category: IngredientCategorySchema,
-    }),
-)
+
+const CategorizedIngredientsSchema = z.object({
+    categorizedIngredients: z.array(
+        z.object({
+            name: z.string(),
+            category: IngredientCategorySchema,
+        }),
+    ),
+})
 
 type IngredientToCategorizeBatch = {
     name: string
@@ -25,6 +28,7 @@ type IngredientToCategorizeBatch = {
 export async function categorizeIngredientsBatch(
     ingredients: IngredientToCategorizeBatch[],
 ): Promise<IngredientCategory[]> {
+    console.log('ingredients', ingredients)
     const [error, result] = await catchError(
         generateObject({
             model: openai(modelName),
@@ -40,9 +44,14 @@ export async function categorizeIngredientsBatch(
         return ingredients.map(() => 'Other')
     }
 
+    const categorizedIngredients = result.object.categorizedIngredients
+
     // Create a map of ingredient names to their categories
     const categoryMap = new Map(
-        result.object.map((item) => [item.name.toLowerCase(), item.category]),
+        categorizedIngredients.map((item) => [
+            item.name.toLowerCase(),
+            item.category,
+        ]),
     )
 
     // Return categories in the same order as input ingredients
