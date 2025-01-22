@@ -5,10 +5,10 @@ import { recipes, recipeIngredients, steps } from '@/db/schema'
 import { requireAuth } from '@/lib/auth'
 import { RecipeError } from '@/errors/errors'
 import { fetchUserId } from '@/lib/db'
-import { RecipeType } from '@/schemas/recipeSchema'
+import { IngredientType, RecipeType } from '@/schemas/recipeSchema'
 import { eq } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
-import { categorizeIngredient } from '@/lib/categorizeIngredient'
+import { categorizeIngredientsBatch } from '@/lib/categorizeIngredient'
 
 // since updating is not common, we delete and insert instead of diffing
 export async function updateRecipe(
@@ -36,20 +36,25 @@ export async function updateRecipe(
         .where(eq(recipeIngredients.recipeId, recipeId))
     await db.delete(steps).where(eq(steps.recipeId, recipeId))
 
+    // Get all ingredient categories in a single API call
+    const categories = await categorizeIngredientsBatch(
+        updatedRecipe.ingredients.map((ing) => ({
+            name: ing.name,
+            note: ing.note,
+        })),
+    )
+
     // Insert new ingredients
-    const ingredientsWithCategories = await Promise.all(
-        updatedRecipe.ingredients.map(async (ingredient) => ({
+    const ingredientsWithCategories = updatedRecipe.ingredients.map(
+        (ingredient: IngredientType, index: number) => ({
             recipeId,
             userId: userId,
             name: ingredient.name,
             quantity: ingredient.quantity,
             unit: ingredient.unit,
             note: ingredient.note,
-            category: await categorizeIngredient(
-                ingredient.name,
-                ingredient.note,
-            ),
-        })),
+            category: categories[index],
+        }),
     )
 
     await db.insert(recipeIngredients).values(ingredientsWithCategories)

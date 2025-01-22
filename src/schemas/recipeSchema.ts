@@ -1,5 +1,18 @@
 import { z } from 'zod'
 
+export const IngredientCategorySchema = z
+    .enum([
+        'Produce',
+        'Meat & Seafood',
+        'Dairy & Eggs',
+        'Pantry',
+        'Frozen',
+        'Other',
+    ])
+    .describe('category of the ingredient')
+
+export type IngredientCategory = z.infer<typeof IngredientCategorySchema>
+
 export const RecipeSchema = z.object({
     id: z.string().describe('The id of the recipe'),
     name: z.string().describe('Name of the recipe'),
@@ -18,12 +31,7 @@ export const RecipeSchema = z.object({
                 .describe('ingredient name in singular form. (E.g. garlic)')
                 .describe('list of ingredients'),
             note: z.string().describe('note of the ingredient').optional(),
-            category: z
-                .string()
-                .describe(
-                    'category of the ingredient (e.g. fruit, vegetable, meat, etc.)',
-                )
-                .optional(),
+            category: IngredientCategorySchema,
         }),
     ),
     steps: z

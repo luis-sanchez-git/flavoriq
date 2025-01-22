@@ -105,8 +105,6 @@ export async function getServingsRecipes() {
         .where(eq(recipes.userId, userId))
         .groupBy(recipes.id, mealBasketRecipes.recipeId)
 
-    console.log(userRecipes)
-
     return userRecipes
 }
 

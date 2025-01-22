@@ -106,7 +106,6 @@ function formatRecipes(recipeData: JoinedRecipe[]) {
     })
 
     return [...recipesMap.values()].map((recipe) => {
-        console.log(recipe)
         delete recipe.ingredientIds
         delete recipe.stepIds
         return recipe

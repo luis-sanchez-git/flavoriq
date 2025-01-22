@@ -15,7 +15,8 @@ import { recipeIngredients, recipes, steps } from '@/db/schema'
 import { fetchUserId } from '@/lib/db'
 import { requireAuth } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
-import { categorizeIngredient } from '@/lib/categorizeIngredient'
+import { categorizeIngredientsBatch } from '@/lib/categorizeIngredient'
+import { IngredientCategory } from '@/schemas/recipeSchema'
 
 export type CreateRecipeState = {
     isSuccess?: boolean
@@ -66,21 +67,27 @@ async function insertRecipeDetails(
     recipeId: string,
     recipeData: RecipeType,
 ) {
-    // Add categorization for ingredients
-    const ingredientInserts = await Promise.all(
-        recipeData.ingredients.map(async (ingredient: IngredientType) => ({
-            recipeId: recipeId,
-            name: ingredient.name,
-            quantity: ingredient.quantity,
-            userId: userId,
-            unit: ingredient.unit,
-            note: ingredient.note,
-            category: await categorizeIngredient(
-                ingredient.name,
-                ingredient.note,
-            ),
+    // Get all ingredient categories in a single API call
+    const categories: IngredientCategory[] = await categorizeIngredientsBatch(
+        recipeData.ingredients.map((ing) => ({
+            name: ing.name,
+            note: ing.note,
         })),
     )
+
+    // Add categorization for ingredients
+    const ingredientInserts = recipeData.ingredients.map(
+        (ingredient: IngredientType, index: number) => ({
+            recipeId: recipeId,
+            userId: userId,
+            name: ingredient.name,
+            quantity: ingredient.quantity,
+            unit: ingredient.unit,
+            note: ingredient.note,
+            category: categories[index],
+        }),
+    )
+
     await db.insert(recipeIngredients).values(ingredientInserts)
 
     const stepInserts = recipeData.steps.map((step: StepType) => ({
