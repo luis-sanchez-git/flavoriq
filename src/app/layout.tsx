@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import TopNav from './recipes/topnav'
+import { Toaster } from '@/components/ui/sonner'
 
 export const metadata: Metadata = {
     title: 'FlavorIQ',
@@ -26,6 +27,7 @@ export default function RootLayout({
                         </div>
                     </footer>
                 </div>
+                <Toaster />
             </body>
         </html>
     )

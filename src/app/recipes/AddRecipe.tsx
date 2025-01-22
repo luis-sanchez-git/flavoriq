@@ -4,7 +4,6 @@ import {
     Dialog,
     DialogContent,
     DialogDescription,
-    DialogFooter,
     DialogHeader,
     DialogTitle,
     DialogTrigger,
@@ -20,66 +19,52 @@ import {
     FormMessage,
 } from '@/components/ui/form'
 import { Textarea } from '@/components/ui/textarea'
-import { LoadingSpinner } from '@/components/ui/loadingspinner'
-import { Alert, AlertTitle } from '@/components/ui/alert'
-import { CircleCheckBigIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { zodResolver } from '@hookform/resolvers/zod'
-
+import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 import {
     newRecipeFormSchema,
     newRecipeFormType,
 } from '@/schemas/newRecipeSchema'
 import { useForm } from 'react-hook-form'
-
-import { useActionState } from 'react'
-import { createNewRecipe, CreateRecipeState } from '@/actions/newRecipeAction'
-
-type CreateRecipeResultProps = CreateRecipeState & {
-    isPending: boolean
-}
-
-function CreateRecipeResult({
-    error,
-    isSuccess,
-    isPending,
-}: CreateRecipeResultProps) {
-    if (isPending || (error === undefined && isSuccess === undefined)) {
-        return null
-    }
-
-    const isError = isSuccess === false
-
-    return (
-        <Alert variant={isError ? 'destructive' : 'default'}>
-            <AlertTitle>
-                {isError ? (
-                    <>Error Creating Recipe. Try Again.</>
-                ) : (
-                    <div className="flex gap-2 items-center">
-                        <CircleCheckBigIcon className="text-green-500" />
-                        Successfully created recipe
-                    </div>
-                )}
-            </AlertTitle>
-        </Alert>
-    )
-}
+import { createNewRecipe } from '@/actions/newRecipeAction'
 
 export function AddRecipeDialog() {
+    const router = useRouter()
+    const [open, setOpen] = useState(false)
+    const [isPending, setIsPending] = useState(false)
+
     const form = useForm<newRecipeFormType>({
         resolver: zodResolver(newRecipeFormSchema),
     })
-    const initialState: CreateRecipeState = {
-        isSuccess: undefined,
-        error: undefined,
+
+    const onSubmit = async (formData: FormData) => {
+        setIsPending(true)
+        setOpen(false)
+        const toastId = toast.loading('Creating your recipe...')
+
+        try {
+            const result = await createNewRecipe({}, formData)
+
+            if (result.isSuccess) {
+                toast.success('Recipe created successfully!', {
+                    id: toastId,
+                })
+                router.refresh()
+            } else {
+                toast.error(`Failed to create recipe: ${result.error}`, {
+                    id: toastId,
+                })
+            }
+        } finally {
+            setIsPending(false)
+        }
     }
-    const [createRecipeState, formAction, isPending] = useActionState(
-        createNewRecipe,
-        initialState,
-    )
+
     return (
-        <Dialog>
+        <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 <AddRecipeButton />
             </DialogTrigger>
@@ -92,7 +77,14 @@ export function AddRecipeDialog() {
                         at least include the name, ingredients, steps.
                     </DialogDescription>
                     <Form {...form}>
-                        <form action={formAction} className="space-y-8">
+                        <form
+                            onSubmit={(e) => {
+                                e.preventDefault()
+                                const formData = new FormData(e.currentTarget)
+                                onSubmit(formData)
+                            }}
+                            className="space-y-8"
+                        >
                             <FormField
                                 control={form.control}
                                 name="recipe"
@@ -117,17 +109,11 @@ export function AddRecipeDialog() {
                                 type="submit"
                                 disabled={isPending}
                             >
-                                {isPending ? <LoadingSpinner /> : 'Create'}
+                                Create
                             </Button>
                         </form>
                     </Form>
                 </DialogHeader>
-                <DialogFooter>
-                    <CreateRecipeResult
-                        {...createRecipeState}
-                        isPending={isPending}
-                    />
-                </DialogFooter>
             </DialogContent>
         </Dialog>
     )
