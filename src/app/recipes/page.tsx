@@ -6,7 +6,7 @@ import { ShoppingBasket } from 'lucide-react'
 
 function RecipesPage() {
     return (
-        <div>
+        <div className="w-full">
             <div className="flex gap-2 mb-4">
                 <AddRecipeDialog />
                 <Link href="/meal-baskets">
