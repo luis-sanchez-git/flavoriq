@@ -29,7 +29,7 @@ import {
     newRecipeFormType,
 } from '@/schemas/newRecipeSchema'
 import { useForm } from 'react-hook-form'
-import { createNewRecipe } from '@/actions/newRecipeAction'
+import { createNewRecipe, CreateRecipeState } from '@/actions/newRecipeAction'
 
 export function AddRecipeDialog() {
     const router = useRouter()
@@ -46,7 +46,20 @@ export function AddRecipeDialog() {
         const toastId = toast.loading('Creating your recipe...')
 
         try {
-            const result = await createNewRecipe({}, formData)
+            // Create an AbortController for timeout
+            const controller = new AbortController()
+            const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+
+            const result = (await Promise.race([
+                createNewRecipe({}, formData),
+                new Promise((_, reject) => {
+                    controller.signal.addEventListener('abort', () => {
+                        reject(new Error('Request timed out'))
+                    })
+                }),
+            ])) as CreateRecipeState
+
+            clearTimeout(timeoutId)
 
             if (result.isSuccess) {
                 toast.success('Recipe created successfully!', {
@@ -58,6 +71,13 @@ export function AddRecipeDialog() {
                     id: toastId,
                 })
             }
+        } catch (error) {
+            toast.error(
+                error instanceof Error && error.message === 'Request timed out'
+                    ? 'Request timed out. Please try again.'
+                    : 'An error occurred while creating the recipe.',
+                { id: toastId },
+            )
         } finally {
             setIsPending(false)
         }
