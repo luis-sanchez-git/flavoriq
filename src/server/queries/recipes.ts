@@ -2,7 +2,13 @@ import { db } from '@/db/drizzle'
 import { recipeIngredients, recipes, steps } from '@/db/schema'
 import { requireAuth } from '@/lib/auth'
 import { fetchUserId } from '@/lib/db'
-import { IngredientType, RecipeType, StepType } from '@/schemas/recipeSchema'
+import {
+    IngredientCategory,
+    IngredientCategorySchema,
+    IngredientType,
+    RecipeType,
+    StepType,
+} from '@/schemas/recipeSchema'
 import { and, eq, inArray } from 'drizzle-orm'
 import { catchError } from '../../lib/utils'
 import { z } from 'zod'
@@ -21,7 +27,7 @@ type JoinedRecipe = {
     stepDescription: string | null
     ingredientUnit: string | null
     ingredientNote: string | null
-    ingredientCategory: string | null
+    ingredientCategory: IngredientCategory | null
 }
 
 type ExtendedRecipeType = RecipeType & {
@@ -41,7 +47,7 @@ const IngredientSchema = z.object({
     quantity: z.number(),
     unit: z.string().optional(),
     note: z.string().optional(),
-    category: z.string().optional(),
+    category: IngredientCategorySchema,
 })
 
 function validateStep(stepData: JoinedRecipe): StepType | null {

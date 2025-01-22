@@ -77,7 +77,10 @@ export const recipeIngredients = pgTable('recipe_ingredients', {
     quantity: real('ingredientQuantity').$type<number>(),
     unit: varchar('unit', { length: 255 }),
     note: text('ingredientNote'), // For additional context like "favorite rub seasoning" or unknown units
-    category: text('category').$type<IngredientCategory>().notNull(),
+    category: text('category')
+        .$type<IngredientCategory>()
+        .notNull()
+        .default('Other'),
 })
 
 export const steps = pgTable('stepsTable', {

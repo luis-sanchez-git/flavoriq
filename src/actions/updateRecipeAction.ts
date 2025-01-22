@@ -20,6 +20,7 @@ export async function updateRecipe(
     if (!userId) {
         throw new RecipeError('User not found')
     }
+
     // Update recipe details
     await db
         .update(recipes)
@@ -36,38 +37,54 @@ export async function updateRecipe(
         .where(eq(recipeIngredients.recipeId, recipeId))
     await db.delete(steps).where(eq(steps.recipeId, recipeId))
 
-    // Get all ingredient categories in a single API call
-    const categories = await categorizeIngredientsBatch(
-        updatedRecipe.ingredients.map((ing) => ({
-            name: ing.name,
-            note: ing.note,
-        })),
-    )
-
-    // Insert new ingredients
-    const ingredientsWithCategories = updatedRecipe.ingredients.map(
-        (ingredient: IngredientType, index: number) => ({
+    // Insert new ingredients without categories first
+    const ingredientInserts = updatedRecipe.ingredients.map(
+        (ingredient: IngredientType) => ({
             recipeId,
-            userId: userId,
+            userId,
             name: ingredient.name,
             quantity: ingredient.quantity,
             unit: ingredient.unit,
             note: ingredient.note,
-            category: categories[index],
         }),
     )
 
-    await db.insert(recipeIngredients).values(ingredientsWithCategories)
+    const insertedIngredients = await db
+        .insert(recipeIngredients)
+        .values(ingredientInserts)
+        .returning({ id: recipeIngredients.id })
 
     // Insert new steps
     await db.insert(steps).values(
         updatedRecipe.steps.map((step) => ({
             recipeId,
-            userId: userId,
+            userId,
             stepNumber: step.stepNumber,
             description: step.description,
         })),
     )
+
+    // Start categorization after main updates complete
+    setTimeout(() => {
+        categorizeIngredientsBatch(
+            updatedRecipe.ingredients.map((ing) => ({
+                name: ing.name,
+                note: ing.note,
+            })),
+        )
+            .then(async (categories) => {
+                await Promise.all(
+                    insertedIngredients.map((ing, index) =>
+                        db
+                            .update(recipeIngredients)
+                            .set({ category: categories[index] })
+                            .where(eq(recipeIngredients.id, ing.id)),
+                    ),
+                )
+                revalidatePath(`/recipes/${recipeId}`)
+            })
+            .catch(console.error)
+    }, 0)
 
     revalidatePath(`/recipes/${recipeId}`)
 }

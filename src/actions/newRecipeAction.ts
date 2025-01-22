@@ -17,6 +17,7 @@ import { requireAuth } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 import { categorizeIngredientsBatch } from '@/lib/categorizeIngredient'
 import { IngredientCategory } from '@/schemas/recipeSchema'
+import { eq } from 'drizzle-orm'
 
 export type CreateRecipeState = {
     isSuccess?: boolean
@@ -67,36 +68,51 @@ async function insertRecipeDetails(
     recipeId: string,
     recipeData: RecipeType,
 ) {
-    // Get all ingredient categories in a single API call
-    const categories: IngredientCategory[] = await categorizeIngredientsBatch(
-        recipeData.ingredients.map((ing) => ({
-            name: ing.name,
-            note: ing.note,
-        })),
-    )
+    // Insert ingredients without category (defaults to 'Other')
+    const ingredientInserts = recipeData.ingredients.map((ingredient) => ({
+        recipeId,
+        userId,
+        name: ingredient.name,
+        quantity: ingredient.quantity,
+        unit: ingredient.unit,
+        note: ingredient.note,
+    }))
 
-    // Add categorization for ingredients
-    const ingredientInserts = recipeData.ingredients.map(
-        (ingredient: IngredientType, index: number) => ({
-            recipeId: recipeId,
-            userId: userId,
-            name: ingredient.name,
-            quantity: ingredient.quantity,
-            unit: ingredient.unit,
-            note: ingredient.note,
-            category: categories[index],
-        }),
-    )
+    const insertedIngredients = await db
+        .insert(recipeIngredients)
+        .values(ingredientInserts)
+        .returning({ id: recipeIngredients.id })
 
-    await db.insert(recipeIngredients).values(ingredientInserts)
-
+    // Insert steps
     const stepInserts = recipeData.steps.map((step: StepType) => ({
-        recipeId: recipeId,
+        recipeId,
         stepNumber: step.stepNumber,
         description: step.description,
-        userId: userId,
+        userId,
     }))
     await db.insert(steps).values(stepInserts)
+
+    // Start categorization after main inserts complete
+    setTimeout(() => {
+        categorizeIngredientsBatch(
+            recipeData.ingredients.map((ing) => ({
+                name: ing.name,
+                note: ing.note,
+            })),
+        )
+            .then(async (categories) => {
+                await Promise.all(
+                    insertedIngredients.map((ing, index) =>
+                        db
+                            .update(recipeIngredients)
+                            .set({ category: categories[index] })
+                            .where(eq(recipeIngredients.id, ing.id)),
+                    ),
+                )
+                revalidatePath('/recipes')
+            })
+            .catch(console.error)
+    }, 0)
 }
 
 // Main action function
