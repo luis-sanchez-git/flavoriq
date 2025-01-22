@@ -1,0 +1,1 @@
+ALTER TABLE "recipeTable" ADD COLUMN "status" text DEFAULT 'PROCESSING' NOT NULL;

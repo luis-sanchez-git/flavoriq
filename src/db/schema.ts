@@ -1,4 +1,4 @@
-import { IngredientCategory } from '@/schemas/recipeSchema'
+import { IngredientCategory, RecipeStatus } from '@/schemas/recipeSchema'
 import {
     pgTable,
     integer,
@@ -57,6 +57,10 @@ export const recipes = pgTable(
             .references(() => users.id, { onDelete: 'cascade' }),
         serving: integer('servings').notNull(),
         duration: varchar('duration', { length: 100 }).notNull(),
+        status: text('status')
+            .$type<RecipeStatus>()
+            .notNull()
+            .default('PROCESSING'),
     },
     (table) => {
         return {

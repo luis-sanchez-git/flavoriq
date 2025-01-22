@@ -12,6 +12,7 @@ import { openai } from '@ai-sdk/openai'
 import { generateObject } from 'ai'
 import { db } from '@/db/drizzle'
 import { recipeIngredients, recipes, steps } from '@/db/schema'
+import { RecipeStatus } from '@/schemas/recipeSchema'
 import { fetchUserId } from '@/lib/db'
 import { requireAuth } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
@@ -129,8 +130,6 @@ export async function createNewRecipe(
             })
             .returning({ id: recipes.id })
 
-        console.log('recipeRecord', recipeRecord)
-
         // Start async recipe creation
         void processRecipeCreation(recipe, userId, recipeRecord.id)
 
@@ -176,6 +175,7 @@ async function processRecipeCreation(
                 name: newRecipe.name,
                 serving: newRecipe.serving,
                 duration: newRecipe.duration,
+                status: 'DONE' as RecipeStatus,
             })
             .where(eq(recipes.id, recipeId))
 

@@ -37,7 +37,7 @@ import {
 
 type PendingRecipe = {
     id: string
-    toastId: string
+    toastId: string | number
 }
 
 export function AddRecipeDialog() {
@@ -59,13 +59,14 @@ export function AddRecipeDialog() {
             await Promise.all(
                 pendingRecipes.map(async ({ id, toastId }) => {
                     const recipe = await checkRecipeStatus(id)
-
                     if (!recipe) {
+                        toast.dismiss(toastId)
                         toast.error('Failed to create recipe', {
                             id: `${toastId}-error`,
                         })
                         completedRecipes.push(id)
-                    } else if (recipe.duration !== 'Processing...') {
+                    } else if (recipe.status === 'DONE') {
+                        toast.dismiss(toastId)
                         toast.success('Recipe created successfully!', {
                             id: `${toastId}-success`,
                         })
@@ -92,11 +93,10 @@ export function AddRecipeDialog() {
     const onSubmit = async (formData: FormData) => {
         setIsPending(true)
         setOpen(false)
-        const toastId = toast.loading('Creating your recipe...').toString()
+        const toastId = toast.loading('Creating your recipe...')
 
         try {
             const result = await createNewRecipe({}, formData)
-            console.log('result', result)
 
             if (result.recipeId) {
                 setPendingRecipes((prev) => {
@@ -110,11 +110,13 @@ export function AddRecipeDialog() {
                 })
                 form.reset()
             } else if (result.error) {
+                toast.dismiss(toastId)
                 toast.error(`Failed to create recipe: ${result.error}`, {
                     id: toastId,
                 })
             }
         } catch (error) {
+            toast.dismiss(toastId)
             toast.error('An error occurred while creating the recipe.', {
                 id: toastId,
             })

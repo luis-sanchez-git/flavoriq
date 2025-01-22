@@ -11,6 +11,10 @@ export const IngredientCategorySchema = z
     ])
     .describe('category of the ingredient in a grocery store')
 
+export const RecipeStatusSchema = z.enum(['PROCESSING', 'DONE'])
+
+export type RecipeStatus = z.infer<typeof RecipeStatusSchema>
+
 export type IngredientCategory = z.infer<typeof IngredientCategorySchema>
 
 export const RecipeSchema = z.object({
