@@ -20,7 +20,7 @@ import { IngredientCategory } from '@/schemas/recipeSchema'
 import { eq } from 'drizzle-orm'
 
 export type CreateRecipeState = {
-    isSuccess?: boolean
+    recipeId?: string
     error?: string
 }
 
@@ -46,22 +46,6 @@ async function generateRecipe(recipePrompt: string) {
         }),
     )
 }
-
-// Helper to insert recipe into the database
-async function insertRecipe(userId: string, recipeData: RecipeType) {
-    const recipe = await db
-        .insert(recipes)
-        .values({
-            name: recipeData.name,
-            serving: recipeData.serving,
-            duration: recipeData.duration,
-            userId,
-        })
-        .returning({ id: recipes.id })
-
-    return recipe[0]?.id || null
-}
-
 // Helper to insert ingredients and steps
 async function insertRecipeDetails(
     userId: string,
@@ -120,8 +104,6 @@ export async function createNewRecipe(
     prevState: CreateRecipeState,
     formData: FormData,
 ): Promise<CreateRecipeState> {
-    const respObj: CreateRecipeState = { error: '', isSuccess: true }
-
     try {
         // Authenticate user
         const user = await requireAuth()
@@ -131,37 +113,77 @@ export async function createNewRecipe(
             throw new Error('Invalid form data')
         }
 
+        const userId = await fetchUserId(user.email)
+        if (!userId) {
+            throw new Error('User not found')
+        }
+
+        // Insert initial recipe record
+        const [recipeRecord] = await db
+            .insert(recipes)
+            .values({
+                name: recipe, // Use prompt as initial name
+                userId,
+                serving: 1, // Default values
+                duration: 'Processing...',
+            })
+            .returning({ id: recipes.id })
+
+        console.log('recipeRecord', recipeRecord)
+
+        // Start async recipe creation
+        void processRecipeCreation(recipe, userId, recipeRecord.id)
+
+        return { recipeId: recipeRecord.id }
+    } catch (error) {
+        console.error('Error initiating recipe creation:', error)
+        return {
+            error: error instanceof Error ? error.message : 'Unknown error',
+        }
+    }
+}
+
+// New function to check recipe status
+export async function checkRecipeStatus(recipeId: string) {
+    const recipe = await db
+        .select()
+        .from(recipes)
+        .where(eq(recipes.id, recipeId))
+        .limit(1)
+
+    return recipe[0]
+}
+
+// New async processing function
+async function processRecipeCreation(
+    recipePrompt: string,
+    userId: string,
+    recipeId: string,
+) {
+    try {
         // Generate recipe from OpenAI
-        const [generateErr, responseObj] = await generateRecipe(recipe)
+        const [generateErr, responseObj] = await generateRecipe(recipePrompt)
         if (generateErr || !responseObj) {
             throw new Error('Failed to generate recipe')
         }
 
         const { object: newRecipe } = responseObj
 
-        // Fetch user ID
-        const userId = await fetchUserId(user.email)
-
-        if (!userId) {
-            throw new Error('User not found')
-        }
-
-        // Insert recipe into database
-        const recipeId = await insertRecipe(userId, newRecipe)
-        if (!recipeId) {
-            throw new Error('Failed to save recipe')
-        }
+        // Update recipe with generated data
+        await db
+            .update(recipes)
+            .set({
+                name: newRecipe.name,
+                serving: newRecipe.serving,
+                duration: newRecipe.duration,
+            })
+            .where(eq(recipes.id, recipeId))
 
         // Insert ingredients and steps
         await insertRecipeDetails(userId, recipeId, newRecipe)
-
-        respObj.isSuccess = true
-        revalidatePath('/recipes')
     } catch (error) {
-        console.error('Error creating recipe:', error)
-        respObj.error = error instanceof Error ? error.message : 'Unknown error'
-        respObj.isSuccess = false
+        console.error('Error in recipe creation:', error)
+        // Delete the recipe if generation failed
+        await db.delete(recipes).where(eq(recipes.id, recipeId))
     }
-
-    return respObj
 }

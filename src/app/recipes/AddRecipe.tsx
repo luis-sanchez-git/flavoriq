@@ -23,61 +23,101 @@ import { Button } from '@/components/ui/button'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
     newRecipeFormSchema,
     newRecipeFormType,
 } from '@/schemas/newRecipeSchema'
 import { useForm } from 'react-hook-form'
-import { createNewRecipe, CreateRecipeState } from '@/actions/newRecipeAction'
+import {
+    createNewRecipe,
+    CreateRecipeState,
+    checkRecipeStatus,
+} from '@/actions/newRecipeAction'
+
+type PendingRecipe = {
+    id: string
+    toastId: string
+}
 
 export function AddRecipeDialog() {
     const router = useRouter()
     const [open, setOpen] = useState(false)
     const [isPending, setIsPending] = useState(false)
+    const [pendingRecipes, setPendingRecipes] = useState<PendingRecipe[]>([])
 
     const form = useForm<newRecipeFormType>({
         resolver: zodResolver(newRecipeFormSchema),
     })
 
+    useEffect(() => {
+        if (pendingRecipes.length === 0) return
+
+        const pollRecipes = async () => {
+            const completedRecipes: string[] = []
+
+            await Promise.all(
+                pendingRecipes.map(async ({ id, toastId }) => {
+                    const recipe = await checkRecipeStatus(id)
+
+                    if (!recipe) {
+                        toast.error('Failed to create recipe', {
+                            id: `${toastId}-error`,
+                        })
+                        completedRecipes.push(id)
+                    } else if (recipe.duration !== 'Processing...') {
+                        toast.success('Recipe created successfully!', {
+                            id: `${toastId}-success`,
+                        })
+                        completedRecipes.push(id)
+                        router.refresh()
+                    }
+                }),
+            )
+
+            if (completedRecipes.length > 0) {
+                setPendingRecipes((prev) =>
+                    prev.filter(
+                        (recipe) => !completedRecipes.includes(recipe.id),
+                    ),
+                )
+            } else {
+                setTimeout(pollRecipes, 2000)
+            }
+        }
+
+        pollRecipes()
+    }, [pendingRecipes, router])
+
     const onSubmit = async (formData: FormData) => {
         setIsPending(true)
         setOpen(false)
-        const toastId = toast.loading('Creating your recipe...')
+        const toastId = toast.loading('Creating your recipe...').toString()
 
         try {
-            // Create an AbortController for timeout
-            const controller = new AbortController()
-            const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+            const result = await createNewRecipe({}, formData)
+            console.log('result', result)
 
-            const result = (await Promise.race([
-                createNewRecipe({}, formData),
-                new Promise((_, reject) => {
-                    controller.signal.addEventListener('abort', () => {
-                        reject(new Error('Request timed out'))
-                    })
-                }),
-            ])) as CreateRecipeState
-
-            clearTimeout(timeoutId)
-
-            if (result.isSuccess) {
-                toast.success('Recipe created successfully!', {
-                    id: toastId,
+            if (result.recipeId) {
+                setPendingRecipes((prev) => {
+                    const recipeExists = prev.some(
+                        (recipe) => recipe.id === result.recipeId,
+                    )
+                    if (recipeExists) {
+                        return prev
+                    }
+                    return [...prev, { id: result.recipeId!, toastId }]
                 })
-                router.refresh()
-            } else {
+                form.reset()
+            } else if (result.error) {
                 toast.error(`Failed to create recipe: ${result.error}`, {
                     id: toastId,
                 })
             }
         } catch (error) {
-            toast.error(
-                error instanceof Error && error.message === 'Request timed out'
-                    ? 'Request timed out. Please try again.'
-                    : 'An error occurred while creating the recipe.',
-                { id: toastId },
-            )
+            toast.error('An error occurred while creating the recipe.', {
+                id: toastId,
+            })
         } finally {
             setIsPending(false)
         }
