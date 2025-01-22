@@ -24,7 +24,14 @@ export function EditRecipeForm({ recipe, onCancel }: EditRecipeFormProps) {
     const addIngredient = () => {
         setIngredients([
             ...ingredients,
-            { id: '', name: '', quantity: 0, unit: '', note: '' },
+            {
+                id: '',
+                name: '',
+                quantity: 0,
+                unit: '',
+                note: '',
+                category: 'Other',
+            },
         ])
     }
 
