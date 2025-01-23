@@ -28,12 +28,15 @@ type IngredientToCategorizeBatch = {
 export async function categorizeIngredientsBatch(
     ingredients: IngredientToCategorizeBatch[],
 ): Promise<IngredientCategory[]> {
+    const ingredientList = ingredients
+        .map((ing) => `${ing.name}${ing.note ? ` (${ing.note})` : ''}`)
+        .join('\n')
     const [error, result] = await catchError(
         generateObject({
             model: openai(modelName),
             schema: CategorizedIngredientsSchema,
-            prompt: `Categorize these ingredients into their respective categories (Produce, Meat, Dairy, Pantry, Spices, Other):
-            ${ingredients.map((ing) => `${ing.name}${ing.note ? ` (${ing.note})` : ''}`).join('\n')}`,
+            prompt: `Categorize these ingredients into their respective categories:
+            ${ingredientList}`,
         }),
     )
 

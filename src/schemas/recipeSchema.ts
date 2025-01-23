@@ -9,7 +9,15 @@ export const IngredientCategorySchema = z
         'Frozen',
         'Other',
     ])
-    .describe('category of the ingredient in a grocery store')
+    .describe(
+        'Category of the ingredient in a grocery store. Examples:\n' +
+            '- Produce: fresh fruits, vegetables, herbs (e.g., apples, lettuce, basil)\n' +
+            '- Meat & Seafood: raw or prepared meats, fish, shellfish (e.g., chicken breast, salmon, shrimp)\n' +
+            '- Dairy & Eggs: milk products, cheese, eggs, yogurt (e.g., butter, cheddar, heavy cream)\n' +
+            '- Pantry: dry goods, canned items, spices, oils (e.g., flour, rice, olive oil, canned tomatoes)\n' +
+            '- Frozen: frozen vegetables, fruits, prepared foods (e.g., frozen peas, ice cream)\n' +
+            "- Other: items that don't fit in other categories (e.g., prepared sauces, specialty items)",
+    )
 
 export const RecipeStatusSchema = z.enum(['PROCESSING', 'DONE'])
 
