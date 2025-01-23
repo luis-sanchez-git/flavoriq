@@ -4,6 +4,7 @@ import { requireAuth } from '@/lib/auth'
 import { fetchUserId } from '@/lib/db'
 import { eq, sql, and, not, exists } from 'drizzle-orm'
 import { getRecipes } from './recipes'
+import { unstable_cache } from 'next/cache'
 
 export type MealBasket = {
     id: string
@@ -20,17 +21,22 @@ export async function getMealBaskets() {
         throw new Error('User not found')
     }
 
-    // Get all baskets with their recipe counts
-    const baskets = await db
-        .select({
-            id: mealBaskets.id,
-            name: mealBaskets.name,
-            description: mealBaskets.description,
-        })
-        .from(mealBaskets)
-        .where(eq(mealBaskets.userId, userId))
+    return unstable_cache(
+        async (uid: string) => {
+            // Get all baskets with their recipe counts
+            const baskets = await db
+                .select({
+                    id: mealBaskets.id,
+                    name: mealBaskets.name,
+                    description: mealBaskets.description,
+                })
+                .from(mealBaskets)
+                .where(eq(mealBaskets.userId, uid))
 
-    return baskets
+            return baskets
+        },
+        ['meal-baskets', userId],
+    )(userId)
 }
 
 export async function getMealBasket(id: string) {
