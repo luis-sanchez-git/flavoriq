@@ -16,6 +16,7 @@ import { BasketWithRecipes } from '@/schemas/mealBasketsSchema'
 import { updateServings } from '@/actions/MealBasketAction'
 import { useActionState } from 'react'
 import { z } from 'zod'
+import { LoadingSpinner } from '@/components/ui/loadingspinner'
 const ServingsFormSchema = z.record(z.string(), z.number())
 
 type ServingsFormType = z.infer<typeof ServingsFormSchema>
@@ -38,10 +39,13 @@ export default function ServingsSection({
 
     const updateServingsWithMealBasketId = updateServings.bind(null, basket.id)
 
-    const [state, formAction] = useActionState(updateServingsWithMealBasketId, {
-        isSuccess: false,
-        error: undefined,
-    })
+    const [state, formAction, pending] = useActionState(
+        updateServingsWithMealBasketId,
+        {
+            isSuccess: false,
+            error: undefined,
+        },
+    )
 
     const handleServingsChange = (recipeId: string, change: number) => {
         const currentValue = form.getValues(recipeId) || 1
@@ -124,8 +128,16 @@ export default function ServingsSection({
                                     </div>
                                 </div>
                             ))}
-                            <Button type="submit" className="mt-4">
-                                Save Planned Servings
+                            <Button
+                                type="submit"
+                                className="mt-4"
+                                disabled={pending}
+                            >
+                                {pending ? (
+                                    <LoadingSpinner />
+                                ) : (
+                                    'Save Planned Servings'
+                                )}
                             </Button>
                         </form>
                     </Form>

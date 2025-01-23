@@ -240,9 +240,6 @@ export function EditRecipeForm({ recipe, onCancel }: EditRecipeFormProps) {
             </div>
 
             <div className="flex justify-end gap-4">
-                <Button type="button" variant="outline" className="w-24">
-                    Cancel
-                </Button>
                 <Button type="submit">Save Changes</Button>
             </div>
         </form>

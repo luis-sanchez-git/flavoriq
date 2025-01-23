@@ -64,7 +64,7 @@ export async function addRecipeToBasket(basketId: string, recipeId: string) {
         recipeId: data.recipeId,
         plannedServings: 1, // Default to 1 serving
     })
-
+    revalidatePath(`/meal-baskets/[slug]`)
     return { success: true }
 }
 
@@ -102,6 +102,6 @@ export async function updateServings(
                 ),
         ),
     )
-
+    revalidatePath(`/meal-baskets/[slug]`)
     return { isSuccess: true, error: undefined }
 }
