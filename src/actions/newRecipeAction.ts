@@ -53,7 +53,7 @@ async function insertRecipeDetails(
     recipeId: string,
     recipeData: RecipeType,
 ) {
-    // Insert ingredients without category (defaults to 'Other')
+    // Insert ingredients without category initially
     const ingredientInserts = recipeData.ingredients.map((ingredient) => ({
         recipeId,
         userId,
@@ -77,27 +77,33 @@ async function insertRecipeDetails(
     }))
     await db.insert(steps).values(stepInserts)
 
-    // Start categorization after main inserts complete
-    setTimeout(() => {
-        categorizeIngredientsBatch(
-            recipeData.ingredients.map((ing) => ({
-                name: ing.name,
-                note: ing.note,
-            })),
-        )
-            .then(async (categories) => {
-                await Promise.all(
-                    insertedIngredients.map((ing, index) =>
-                        db
-                            .update(recipeIngredients)
-                            .set({ category: categories[index] })
-                            .where(eq(recipeIngredients.id, ing.id)),
-                    ),
-                )
-                revalidatePath('/recipes')
+    // Start async categorization in background
+    void (async () => {
+        try {
+            const categories = await categorizeIngredientsBatch(
+                recipeData.ingredients.map((ing) => ({
+                    name: ing.name,
+                    note: ing.note,
+                })),
+            )
+
+            await Promise.all(
+                insertedIngredients.map((ing, index) =>
+                    db
+                        .update(recipeIngredients)
+                        .set({ category: categories[index] })
+                        .where(eq(recipeIngredients.id, ing.id)),
+                ),
+            )
+            revalidatePath('/recipes')
+        } catch (error) {
+            console.error('Error categorizing ingredients:', error, {
+                recipeId,
+                ingredientIds: insertedIngredients.map((ing) => ing.id),
             })
-            .catch(console.error)
-    }, 0)
+            // Don't throw since this is a background task
+        }
+    })()
 }
 
 // Main action function
