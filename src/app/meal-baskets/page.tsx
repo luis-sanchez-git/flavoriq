@@ -1,9 +1,9 @@
-import { getMealBaskets } from '@/server/queries/meal-baskets'
+import { mealBasketController } from '@/server/controllers/mealBasketController'
 import AddMealBasketDialog from './add-meal-basket-dialog'
 import BasketList from './basket-list'
 
 export default async function MealBasketsPage() {
-    const baskets = await getMealBaskets()
+    const baskets = await mealBasketController.getMealBaskets()
 
     return (
         <div className="mx-auto py-8">

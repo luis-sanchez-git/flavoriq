@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import { RecipeType } from '@/schemas/recipeSchema'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { getRecipe } from '@/server/queries/recipes'
+import { recipesController } from '@/server/controllers/recipesController'
 import RecipePrompt from './recipePrompt'
 import { RecipeView } from './recipeView'
 
@@ -9,7 +9,7 @@ type Params = Promise<{ id: string }>
 
 export default async function RecipePage(props: { params: Params }) {
     const params = await props.params
-    const recipe: RecipeType = await getRecipe(params.id)
+    const recipe: RecipeType = await recipesController.getRecipe(params.id)
     if (!recipe) {
         notFound()
     }

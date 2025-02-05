@@ -1,31 +1,14 @@
 'use server'
 
-import { catchError } from '@/lib/utils'
 import { newRecipeFormSchema } from '@/schemas/newRecipeSchema'
-import {
-    IngredientType,
-    RecipeSchema,
-    RecipeType,
-    StepType,
-} from '@/schemas/recipeSchema'
-import { openai } from '@ai-sdk/openai'
-import { generateObject } from 'ai'
-import { db } from '@/db/drizzle'
-import { recipeIngredients, recipes, steps } from '@/db/schema'
-import { RecipeStatus } from '@/schemas/recipeSchema'
 import { fetchUserId } from '@/lib/db'
 import { requireAuth } from '@/lib/auth'
-import { revalidatePath } from 'next/cache'
-import { categorizeIngredientsBatch } from '@/lib/categorizeIngredient'
-import { IngredientCategory } from '@/schemas/recipeSchema'
-import { eq } from 'drizzle-orm'
+import { recipeService } from '@/server/services/recipeService'
 
 export type CreateRecipeState = {
     recipeId?: string
     error?: string
 }
-
-const modelName = process.env.OPENAI_CREATE_RECIPE_MODEL!
 
 // Helper to validate recipe form data
 function validateRecipeForm(formData: FormData): string | null {
@@ -37,75 +20,6 @@ function validateRecipeForm(formData: FormData): string | null {
     return validatedFields.data.recipe
 }
 
-// Helper to generate a recipe using OpenAI
-async function generateRecipe(recipePrompt: string) {
-    return catchError(
-        generateObject({
-            model: openai(modelName),
-            schema: RecipeSchema,
-            prompt: `Recipe for ${recipePrompt}`,
-        }),
-    )
-}
-// Helper to insert ingredients and steps
-async function insertRecipeDetails(
-    userId: string,
-    recipeId: string,
-    recipeData: RecipeType,
-) {
-    // Insert ingredients without category initially
-    const ingredientInserts = recipeData.ingredients.map((ingredient) => ({
-        recipeId,
-        userId,
-        name: ingredient.name,
-        quantity: ingredient.quantity,
-        unit: ingredient.unit,
-        note: ingredient.note,
-    }))
-
-    const insertedIngredients = await db
-        .insert(recipeIngredients)
-        .values(ingredientInserts)
-        .returning({ id: recipeIngredients.id })
-
-    // Insert steps
-    const stepInserts = recipeData.steps.map((step: StepType) => ({
-        recipeId,
-        stepNumber: step.stepNumber,
-        description: step.description,
-        userId,
-    }))
-    await db.insert(steps).values(stepInserts)
-
-    // Start async categorization in background
-    void (async () => {
-        try {
-            const categories = await categorizeIngredientsBatch(
-                recipeData.ingredients.map((ing) => ({
-                    name: ing.name,
-                    note: ing.note,
-                })),
-            )
-
-            await Promise.all(
-                insertedIngredients.map((ing, index) =>
-                    db
-                        .update(recipeIngredients)
-                        .set({ category: categories[index] })
-                        .where(eq(recipeIngredients.id, ing.id)),
-                ),
-            )
-            revalidatePath('/recipes')
-        } catch (error) {
-            console.error('Error categorizing ingredients:', error, {
-                recipeId,
-                ingredientIds: insertedIngredients.map((ing) => ing.id),
-            })
-            // Don't throw since this is a background task
-        }
-    })()
-}
-
 // Main action function
 export async function createNewRecipe(
     prevState: CreateRecipeState,
@@ -114,6 +28,7 @@ export async function createNewRecipe(
     try {
         // Authenticate user
         const user = await requireAuth()
+
         // Validate form data
         const recipe = validateRecipeForm(formData)
         if (!recipe) {
@@ -125,21 +40,9 @@ export async function createNewRecipe(
             throw new Error('User not found')
         }
 
-        // Insert initial recipe record
-        const [recipeRecord] = await db
-            .insert(recipes)
-            .values({
-                name: recipe, // Use prompt as initial name
-                userId,
-                serving: 1, // Default values
-                duration: 'Processing...',
-            })
-            .returning({ id: recipes.id })
-
-        // Start async recipe creation
-        void processRecipeCreation(recipe, userId, recipeRecord.id)
-
-        return { recipeId: recipeRecord.id }
+        // Create recipe through service
+        const { recipeId } = await recipeService.createRecipe(recipe, userId)
+        return { recipeId }
     } catch (error) {
         console.error('Error initiating recipe creation:', error)
         return {
@@ -148,48 +51,7 @@ export async function createNewRecipe(
     }
 }
 
-// New function to check recipe status
+// Status check function
 export async function checkRecipeStatus(recipeId: string) {
-    const recipe = await db
-        .select()
-        .from(recipes)
-        .where(eq(recipes.id, recipeId))
-        .limit(1)
-
-    return recipe[0]
-}
-
-// New async processing function
-async function processRecipeCreation(
-    recipePrompt: string,
-    userId: string,
-    recipeId: string,
-) {
-    try {
-        // Generate recipe from OpenAI
-        const [generateErr, responseObj] = await generateRecipe(recipePrompt)
-        if (generateErr || !responseObj) {
-            throw new Error('Failed to generate recipe')
-        }
-
-        const { object: newRecipe } = responseObj
-
-        // Update recipe with generated data
-        await db
-            .update(recipes)
-            .set({
-                name: newRecipe.name,
-                serving: newRecipe.serving,
-                duration: newRecipe.duration,
-                status: 'DONE' as RecipeStatus,
-            })
-            .where(eq(recipes.id, recipeId))
-
-        // Insert ingredients and steps
-        await insertRecipeDetails(userId, recipeId, newRecipe)
-    } catch (error) {
-        console.error('Error in recipe creation:', error)
-        // Delete the recipe if generation failed
-        await db.delete(recipes).where(eq(recipes.id, recipeId))
-    }
+    return recipeService.getRecipeStatus(recipeId)
 }

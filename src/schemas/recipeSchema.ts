@@ -31,7 +31,10 @@ export const RecipeSchema = z.object({
     ingredients: z.array(
         z.object({
             id: z.string().describe('The id of the ingredient'),
-            quantity: z.number().describe('quantity of the ingredient'),
+            quantity: z
+                .number()
+                .describe('quantity of the ingredient')
+                .optional(),
             unit: z
                 .string()
                 .describe(

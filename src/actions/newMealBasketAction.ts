@@ -1,9 +1,8 @@
 'use server'
 
-import { db } from '@/db/drizzle'
-import { mealBaskets } from '@/db/schema'
 import { requireAuth } from '@/lib/auth'
 import { fetchUserId } from '@/lib/db'
+import { mealBasketService } from '@/server/services/mealBasketService'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -50,11 +49,7 @@ export async function createMealBasket(
         }
 
         // Insert meal basket into database
-        await db.insert(mealBaskets).values({
-            name: validated.data.name,
-            description: validated.data.description,
-            userId,
-        })
+        await mealBasketService.createMealBasket(validated.data)
 
         respObj.isSuccess = true
         revalidatePath('/meal-baskets')

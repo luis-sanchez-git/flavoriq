@@ -117,5 +117,5 @@ export const mealBasketRecipes = pgTable('mealBasketRecipes', {
     recipeId: uuid('recipeId')
         .references(() => recipes.id, { onDelete: 'cascade' })
         .notNull(),
-    plannedServings: integer('plannedServings').notNull(),
+    plannedServings: integer('plannedServings').default(1),
 })

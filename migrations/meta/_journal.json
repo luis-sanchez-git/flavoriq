@@ -57,6 +57,13 @@
       "when": 1737583956531,
       "tag": "0007_icy_betty_ross",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1737666773012,
+      "tag": "0008_short_shockwave",
+      "breakpoints": true
     }
   ]
 }

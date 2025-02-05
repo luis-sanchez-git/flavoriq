@@ -1,14 +1,18 @@
 'use server'
 
-import { db } from '@/db/drizzle'
-import { mealBasketRecipes, mealBaskets } from '@/db/schema'
-import { requireAuth } from '@/lib/auth'
-import { RecipeError } from '@/errors/errors'
-import { fetchUserId } from '@/lib/db'
-import { eq, and } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
+import { MealBasketFormSchema } from '@/schemas/mealBasketsSchema'
+import { mealBasketService } from '@/server/services/mealBasketService'
+import { AuthError, NotFoundError } from '@/lib/errors'
 
+export type ActionResponse<T = void> = {
+    data?: T
+    error?: string
+    success?: boolean
+}
+
+// Schema definitions
 const addRecipeToBasketSchema = z.object({
     recipeId: z.string().uuid(),
     basketId: z.string().uuid(),
@@ -19,89 +23,101 @@ const updateServingsSchema = z.record(
     z.coerce.number().min(1).int(),
 )
 
-export async function deleteMealBasketAction(id: string) {
+// Actions
+export async function createMealBasket(
+    prevState: ActionResponse,
+    formData: FormData,
+): Promise<ActionResponse> {
     try {
-        const user = await requireAuth()
-        const userId = await fetchUserId(user.email)
-        if (!userId) {
-            throw new RecipeError('User not found')
-        }
+        // Form validation
+        const validated = MealBasketFormSchema.parse({
+            name: formData.get('name'),
+            description: formData.get('description'),
+        })
 
-        await db.delete(mealBaskets).where(and(eq(mealBaskets.id, id)))
+        // Delegate to service
+        await mealBasketService.createMealBasket(validated)
         revalidatePath('/meal-baskets')
+
         return { success: true }
-    } catch (e) {
-        if (e instanceof RecipeError) {
-            console.error(`[RecipeError]: ${e.message}`, {
-                details: e.details,
-            })
-        } else {
-            console.error(`[UnhandledError]: ${e}`)
+    } catch (error) {
+        console.error('Failed to create meal basket:', error)
+        return {
+            error:
+                error instanceof Error
+                    ? error.message
+                    : 'Failed to create meal basket',
+            success: false,
         }
-        return { success: false }
     }
 }
 
-export async function addRecipeToBasket(basketId: string, recipeId: string) {
-    const user = await requireAuth()
-    const userId = await fetchUserId(user.email)
-
-    const { success, data } = addRecipeToBasketSchema.safeParse({
-        recipeId: recipeId,
-        basketId: basketId,
-    })
-
-    if (!success) {
-        throw new Error('Invalid form data')
+export async function deleteMealBasket(id: string): Promise<ActionResponse> {
+    try {
+        await mealBasketService.deleteMealBasket(id)
+        revalidatePath('/meal-baskets')
+        return { success: true }
+    } catch (error) {
+        console.error('Failed to delete meal basket:', error)
+        if (error instanceof NotFoundError || error instanceof AuthError) {
+            return { error: error.message, success: false }
+        }
+        return { error: 'Failed to delete meal basket', success: false }
     }
+}
 
-    if (!userId) {
-        throw new Error('User not found')
+export async function addRecipeToBasket(
+    basketId: string,
+    recipeId: string,
+): Promise<ActionResponse> {
+    try {
+        // Validate input
+        const validated = addRecipeToBasketSchema.parse({
+            recipeId,
+            basketId,
+        })
+
+        // Delegate to service
+        await mealBasketService.addRecipeToBasket(
+            validated.basketId,
+            validated.recipeId,
+        )
+        revalidatePath(`/meal-baskets/${basketId}`)
+        return { success: true }
+    } catch (error) {
+        console.error('Failed to add recipe to basket:', error)
+        return {
+            error:
+                error instanceof Error
+                    ? error.message
+                    : 'Failed to add recipe to basket',
+            success: false,
+        }
     }
-
-    await db.insert(mealBasketRecipes).values({
-        mealBasketId: data.basketId,
-        recipeId: data.recipeId,
-        plannedServings: 1, // Default to 1 serving
-    })
-    revalidatePath(`/meal-baskets/[slug]`)
-    return { success: true }
 }
 
 export async function updateServings(
     basketId: string,
-    prevState: { isSuccess: boolean; error?: string },
+    prevState: ActionResponse,
     formData: FormData,
-) {
-    const user = await requireAuth()
-    const userId = await fetchUserId(user.email)
+): Promise<ActionResponse> {
+    try {
+        // Validate input
+        const formObject = Object.fromEntries(formData.entries())
+        const validated = updateServingsSchema.parse(formObject)
 
-    if (!userId) {
-        throw new Error('User not found')
+        // Delegate to service
+        await mealBasketService.updateServings(basketId, validated)
+        revalidatePath(`/meal-baskets/${basketId}`)
+        return { success: true }
+    } catch (error) {
+        console.error('Failed to update servings:', error)
+        return {
+            error:
+                error instanceof Error
+                    ? error.message
+                    : 'Failed to update servings',
+            success: false,
+        }
     }
-
-    const formObject = Object.fromEntries(formData.entries())
-
-    const { success, data } = updateServingsSchema.safeParse(formObject)
-
-    if (!success) {
-        throw new Error('Invalid form data')
-    }
-
-    // Update each recipe's servings in the basket
-    await Promise.all(
-        Object.entries(data).map(([recipeId, servings]) =>
-            db
-                .update(mealBasketRecipes)
-                .set({ plannedServings: servings })
-                .where(
-                    and(
-                        eq(mealBasketRecipes.mealBasketId, basketId),
-                        eq(mealBasketRecipes.recipeId, recipeId),
-                    ),
-                ),
-        ),
-    )
-    revalidatePath(`/meal-baskets/[slug]`)
-    return { isSuccess: true, error: undefined }
 }

@@ -10,14 +10,11 @@ import {
 } from '@/components/ui/card'
 import { Trash2Icon } from 'lucide-react'
 import Link from 'next/link'
-import { deleteMealBasketAction } from '@/actions/MealBasketAction'
+import { deleteMealBasket } from '@/actions/MealBasketAction'
+import { MealBasket } from '@/schemas/mealBasketsSchema'
 
 type BasketListProps = {
-    baskets: Array<{
-        id: string
-        name: string
-        description: string | null
-    }>
+    baskets: MealBasket[]
 }
 
 export default function BasketList({ baskets }: BasketListProps) {
@@ -25,7 +22,7 @@ export default function BasketList({ baskets }: BasketListProps) {
         e.preventDefault()
         e.stopPropagation()
         try {
-            await deleteMealBasketAction(id)
+            await deleteMealBasket(id)
         } catch (error) {
             console.error('Error deleting meal basket:', error)
         }

@@ -1,7 +1,4 @@
-import {
-    getMealBasket,
-    getAvailableRecipes,
-} from '@/server/queries/meal-baskets'
+import { mealBasketController } from '@/server/controllers/mealBasketController'
 import AddRecipeToBasket from './add-recipe-to-basket'
 import ServingsSection from './servings-section'
 import BasketIngredients from './basket-ingredients'
@@ -11,8 +8,8 @@ export default async function MealBasketPage(props: { params: Params }) {
     const params = await props.params
 
     const [basket, availableRecipes] = await Promise.all([
-        getMealBasket(params.id),
-        getAvailableRecipes(params.id),
+        mealBasketController.getMealBasket(params.id),
+        mealBasketController.getAvailableRecipes(params.id),
     ])
 
     return (

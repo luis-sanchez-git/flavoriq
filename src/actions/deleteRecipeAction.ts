@@ -1,13 +1,10 @@
 'use server'
 
-import { db } from '@/db/drizzle'
-import { recipes } from '@/db/schema'
 import { requireAuth } from '@/lib/auth'
 import { RecipeError } from '@/errors/errors'
 import { fetchUserId } from '@/lib/db'
-import { eq } from 'drizzle-orm'
-import { and } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
+import { recipeService } from '@/server/services/recipeService'
 
 export async function deleteRecipeAction(id: string) {
     try {
@@ -16,7 +13,7 @@ export async function deleteRecipeAction(id: string) {
         if (!userId) {
             throw new RecipeError('User not found')
         }
-        await db.delete(recipes).where(and(eq(recipes.id, id)))
+        await recipeService.deleteRecipe(id, userId)
         revalidatePath('/recipes')
         return { success: true }
     } catch (e) {
