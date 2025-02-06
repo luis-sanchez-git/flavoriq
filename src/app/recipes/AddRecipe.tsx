@@ -65,7 +65,7 @@ export function AddRecipeDialog() {
                             id: `${toastId}-error`,
                         })
                         completedRecipes.push(id)
-                    } else if (recipe.status === 'DONE') {
+                    } else if ('status' in recipe && recipe.status === 'DONE') {
                         toast.dismiss(toastId)
                         toast.success('Recipe created successfully!', {
                             id: `${toastId}-success`,
