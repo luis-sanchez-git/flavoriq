@@ -89,7 +89,6 @@ export class MealBasketRepository {
             .values({
                 name: data.name,
                 description: data.description ?? undefined,
-                id: data.id ?? undefined,
                 userId,
             })
             .returning()

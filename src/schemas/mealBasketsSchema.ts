@@ -3,7 +3,6 @@ import { RecipeSchema } from './recipeSchema'
 
 // Base schema for meal basket validation
 export const MealBasketFormSchema = z.object({
-    id: z.string().uuid().nullable(),
     name: z.string().min(1, 'Name is required'),
     description: z.string().nullable(),
 })
