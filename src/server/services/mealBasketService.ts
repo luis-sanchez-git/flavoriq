@@ -51,6 +51,7 @@ export class MealBasketService {
 
     async updateServings(basketId: string, servings: Record<string, number>) {
         const userId = await this.getUserId()
+        console.log(userId)
         return this.repository.updateServings(basketId, servings)
     }
 }

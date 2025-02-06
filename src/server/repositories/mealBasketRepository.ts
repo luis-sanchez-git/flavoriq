@@ -141,17 +141,16 @@ export class MealBasketRepository {
     async updateServings(basketId: string, servings: Record<string, number>) {
         const recipeIds = Object.keys(servings)
 
-        // Build the CASE statement for updating servings
+        // Build the when clauses
+        const whenClauses = Object.entries(servings).map(
+            ([recipeId, servings]) =>
+                sql`WHEN ${recipeId} THEN ${servings}::integer`,
+        )
+
+        // Combine the when clauses with the CASE statement
         const servingsCaseStatement = sql`
-            CASE recipeId 
-            ${sql.join(
-                Object.entries(servings).map(
-                    ([recipeId, servings]) => sql`
-                        WHEN ${recipeId} THEN ${servings}
-                    `,
-                ),
-                ' ',
-            )}
+            CASE ${mealBasketRecipes.recipeId}
+                ${sql.join(whenClauses, sql` `)}
             END
         `
 
