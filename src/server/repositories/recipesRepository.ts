@@ -84,6 +84,13 @@ export class RecipesRepository {
         )
     }
 
+    async getRecipeStatus(recipeId: string) {
+        return await db
+            .select({ status: recipes.status })
+            .from(recipes)
+            .where(eq(recipes.id, recipeId))
+    }
+
     async getRecipes(
         recipeIds: string[],
         filter: {
@@ -175,7 +182,6 @@ export class RecipesRepository {
                 },
                 {} as Record<string, RecipeType>,
             )
-
         return Object.values(groupedRecipes)
     }
 

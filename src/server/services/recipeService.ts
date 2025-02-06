@@ -122,7 +122,6 @@ export class RecipeService {
                     category: categories[index],
                 })),
             )
-            revalidatePath('/recipes')
         } catch (error) {
             console.error('Error categorizing ingredients:', error, {
                 recipeId,
@@ -132,7 +131,9 @@ export class RecipeService {
     }
 
     async getRecipeStatus(recipeId: string) {
-        return this.repository.getRecipes([recipeId])
+        const recipe = await this.repository.getRecipeStatus(recipeId)
+
+        return recipe[0]
     }
 
     async deleteRecipeOnError(recipeId: string, userId: string) {
@@ -165,12 +166,9 @@ export class RecipeService {
                     category: categories[index],
                 })),
             )
-            revalidatePath(`/recipes/${recipeId}`)
         } catch (error) {
             console.error('Error categorizing ingredients:', error)
         }
-
-        revalidatePath(`/recipes/${recipeId}`)
     }
 
     async getRecipes(recipeIds: string[]) {

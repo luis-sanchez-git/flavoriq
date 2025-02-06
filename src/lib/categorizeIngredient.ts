@@ -55,7 +55,6 @@ export async function categorizeIngredientsBatch(
             item.category,
         ]),
     )
-
     // Return categories in the same order as input ingredients
     return ingredients.map(
         (ing) =>

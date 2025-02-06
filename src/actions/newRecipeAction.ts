@@ -4,6 +4,7 @@ import { newRecipeFormSchema } from '@/schemas/newRecipeSchema'
 import { fetchUserId } from '@/lib/db'
 import { requireAuth } from '@/lib/auth'
 import { recipeService } from '@/server/services/recipeService'
+import { revalidatePath } from 'next/cache'
 
 export type CreateRecipeState = {
     recipeId?: string
@@ -42,6 +43,7 @@ export async function createNewRecipe(
 
         // Create recipe through service
         const { recipeId } = await recipeService.createRecipe(recipe, userId)
+
         return { recipeId }
     } catch (error) {
         console.error('Error initiating recipe creation:', error)
@@ -53,5 +55,17 @@ export async function createNewRecipe(
 
 // Status check function
 export async function checkRecipeStatus(recipeId: string) {
-    return recipeService.getRecipeStatus(recipeId)
+    const user = await requireAuth()
+
+    if (!user) {
+        return { error: 'Unauthorized' }
+    }
+
+    try {
+        const status = await recipeService.getRecipeStatus(recipeId)
+        return status
+    } catch (error) {
+        console.error('Error checking recipe status:', error)
+        return { error: 'Error checking recipe status' }
+    }
 }
