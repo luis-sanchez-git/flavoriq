@@ -55,7 +55,6 @@ export default function AddRecipeToBasket({
         resolver: zodResolver(FormSchema),
     })
     const [open, setOpen] = useState(false)
-    const params = useParams()
 
     const handleAddRecipeToBasket = async () => {
         await addRecipeToBasket(basketId, form.getValues('recipeId'))

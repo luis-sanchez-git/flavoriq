@@ -1,13 +1,14 @@
 import { mealBasketController } from '@/server/controllers/mealBasketController'
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
 import { AuthError, NotFoundError } from '@/lib/errors'
 
 export async function GET(
-    request: Request,
-    { params }: { params: { id: string } },
+    request: NextRequest,
+    { params }: { params: Promise<{ id: string }> },
 ) {
+    const { id } = await params
     try {
-        const basket = await mealBasketController.getMealBasket(params.id)
+        const basket = await mealBasketController.getMealBasket(id)
         return NextResponse.json(basket)
     } catch (error) {
         if (error instanceof NotFoundError) {

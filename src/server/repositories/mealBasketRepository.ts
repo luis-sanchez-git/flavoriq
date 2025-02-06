@@ -39,7 +39,6 @@ export class MealBasketRepository {
             })
             .from(mealBasketRecipes)
             .where(and(eq(mealBasketRecipes.mealBasketId, id)))
-        console.log(basketRecipes)
 
         // Get full recipe data
         const recipeIds = basketRecipes.map((r) => r.recipeId)
