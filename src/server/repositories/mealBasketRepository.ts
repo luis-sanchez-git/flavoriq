@@ -23,6 +23,7 @@ export class MealBasketRepository {
             .where(eq(mealBaskets.userId, userId))
     }
 
+    // candidate for refactoring: split pure db query from business logic
     async getBasketWithRecipes(
         id: string,
         userId: string,
@@ -37,10 +38,18 @@ export class MealBasketRepository {
                 plannedServings: mealBasketRecipes.plannedServings,
             })
             .from(mealBasketRecipes)
-            .where(eq(mealBasketRecipes.mealBasketId, id))
+            .where(and(eq(mealBasketRecipes.mealBasketId, id)))
+        console.log(basketRecipes)
 
         // Get full recipe data
         const recipeIds = basketRecipes.map((r) => r.recipeId)
+        if (recipeIds.length === 0) {
+            return {
+                ...basket,
+                recipes: [],
+            }
+        }
+
         const recipes = await recipesRepository.getRecipes(recipeIds)
 
         // Merge planned servings with recipe data
