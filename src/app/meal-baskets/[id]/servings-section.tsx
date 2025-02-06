@@ -42,7 +42,7 @@ export default function ServingsSection({
     const [state, formAction, pending] = useActionState(
         updateServingsWithMealBasketId,
         {
-            isSuccess: false,
+            success: false,
             error: undefined,
         },
     )
